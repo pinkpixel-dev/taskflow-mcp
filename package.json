@@ -1,0 +1,49 @@
+{
+	"name": "@pinkpixel/taskflow-mcp",
+	"version": "1.1.0",
+	"description": "Task manager Model Context Protocol (MCP) server for planning and executing tasks.",
+	"author": "pinkpixel",
+	"main": "dist/index.js",
+	"type": "module",
+	"bin": {
+		"taskflow-mcp": "dist/index.js"
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc && shx chmod +x dist/*.js",
+		"prepare": "npm run build",
+		"watch": "tsc --watch"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/pinkpixel-dev/taskflow-mcp.git"
+	},
+	"keywords": [
+		"taskflow",
+		"task",
+		"task manager",
+		"mcp",
+		"model context protocol",
+		"claude",
+		"cursor"
+	],
+	"license": "MIT",
+	"publishConfig": {
+		"access": "public"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "0.5.0",
+		"chalk": "^5.3.0",
+		"glob": "^10.3.10",
+		"zod": "^3.23.8",
+		"zod-to-json-schema": "^3.23.5"
+	},
+	"devDependencies": {
+		"@types/json-schema": "^7.0.15",
+		"@types/node": "^20.11.0",
+		"shx": "^0.3.4",
+		"typescript": "^5.3.3"
+	}
+}

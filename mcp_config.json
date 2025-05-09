@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "taskflow": {
+      "command": "npx",
+      "args": ["-y", "@pinkpixel/taskflow-mcp"]
+    }
+  }
+}
