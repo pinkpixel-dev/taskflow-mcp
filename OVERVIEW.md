@@ -67,6 +67,10 @@ This workflow ensures that tasks are properly tracked and that the user has visi
 5. **Persistence**: Save tasks and requests to disk for persistence across sessions
 6. **Flexible Management**: Add, update, or delete tasks and subtasks as needed
 7. **Detailed Reporting**: View task details, subtask status, and progress tables
+8. **Export Options**: Export task plans and status reports in Markdown, JSON, or HTML formats
+9. **Dependencies**: Track project and task-level dependencies with version information
+10. **Notes**: Add project-level notes for important information and preferences
+11. **System Prompts**: Example system prompts for AI assistants to consistently use the tools
 
 ## Technical Implementation
 
@@ -85,7 +89,7 @@ The project has a relatively simple structure, with a single main file (`index.t
 
 The TaskFlow MCP server exposes the following tools to AI assistants:
 
-1. **plan_task**: Register a new user request and plan its associated tasks (with optional subtasks)
+1. **plan_task**: Register a new user request and plan its associated tasks (with optional subtasks, dependencies, notes, and outputPath)
 2. **get_next_task**: Retrieve the next pending task for a request
 3. **mark_task_done**: Mark a task as completed (requires all subtasks to be completed first)
 4. **approve_task_completion**: Approve a completed task
@@ -99,6 +103,11 @@ The TaskFlow MCP server exposes the following tools to AI assistants:
 12. **mark_subtask_done**: Mark a subtask as completed
 13. **update_subtask**: Update a subtask's title or description
 14. **delete_subtask**: Delete a subtask from a task
+15. **export_task_status**: Export the current status of all tasks to a file (markdown, JSON, or HTML)
+16. **add_note**: Add a note to a request
+17. **update_note**: Update an existing note
+18. **delete_note**: Delete a note from a request
+19. **add_dependency**: Add a dependency to a request or task
 
 ## Configuration
 
@@ -107,6 +116,8 @@ The TaskFlow MCP server can be configured in the following ways:
 1. **Task File Path**: Set the `TASK_MANAGER_FILE_PATH` environment variable to specify where tasks should be stored (default: `~/Documents/tasks.json`)
 
 2. **MCP Configuration**: The `mcp_config.json` file defines how the MCP server should be launched, specifying that it should be run using `npx` with the `@pinkpixel-dev/taskflow-mcp` package.
+
+3. **System Prompts**: The `example-system-prompt.md` file provides example system prompts that can be added to AI assistants to ensure they consistently use the TaskFlow MCP tools according to the intended workflow.
 
 ## Usage Examples
 
@@ -204,7 +215,38 @@ The TaskFlow MCP server can be configured in the following ways:
    }
    ```
 
-6. **Approve Task Completion**:
+6. **Export Task Status**:
+   ```json
+   {
+     "requestId": "req-1",
+     "outputPath": "C:/Users/username/Documents/task-status.md",
+     "format": "markdown"
+   }
+   ```
+
+7. **Add Note**:
+   ```json
+   {
+     "requestId": "req-1",
+     "title": "Package Manager Preference",
+     "content": "User prefers pnpm over npm for package management."
+   }
+   ```
+
+8. **Add Dependency**:
+   ```json
+   {
+     "requestId": "req-1",
+     "taskId": "task-2",
+     "dependency": {
+       "name": "React",
+       "version": "^18.2.0",
+       "description": "JavaScript library for building user interfaces"
+     }
+   }
+   ```
+
+9. **Approve Task Completion**:
    ```json
    {
      "requestId": "req-1",

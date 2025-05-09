@@ -2,7 +2,7 @@
 
 A task management Model Context Protocol (MCP) server for planning and executing tasks with AI assistants.
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## 🌟 Overview
@@ -12,12 +12,15 @@ TaskFlow MCP is a specialized server that helps AI assistants break down user re
 ## ✨ Features
 
 - 📋 **Task Planning**: Break down complex requests into manageable tasks
-- � **Subtasks**: Divide tasks into smaller, more manageable subtasks
-- �📊 **Progress Tracking**: Track the status of tasks, subtasks, and requests with visual progress tables
+- 🔍 **Subtasks**: Divide tasks into smaller, more manageable subtasks
+- 📊 **Progress Tracking**: Track the status of tasks, subtasks, and requests with visual progress tables
 - 👍 **User Approval**: Enforce user approval steps to ensure quality and control
 - 💾 **Persistence**: Save tasks and requests to disk for persistence across sessions
 - 🔄 **Flexible Management**: Add, update, or delete tasks and subtasks as needed
 - 📝 **Detailed Reporting**: View task details and progress tables
+- 📤 **Export Options**: Export task plans and status reports in Markdown, JSON, or HTML formats
+- 📦 **Dependencies**: Track project and task-level dependencies with version information
+- 📌 **Notes**: Add project-level notes for important information and preferences
 
 ## 🚀 Installation
 
@@ -84,6 +87,8 @@ TaskFlow MCP enforces a specific workflow:
 6. **Repeat**: Continue with the next task until all tasks are complete
 7. **Final Approval**: Get user approval for the entire request
 
+For AI assistants to consistently follow this workflow, see the [example-system-prompt.md](./example-system-prompt.md) file for system prompts you can add to your assistant's instructions.
+
 ## 🧰 Available Tools
 
 TaskFlow MCP exposes the following tools to AI assistants:
@@ -95,10 +100,39 @@ Register a new user request and plan its associated tasks (with optional subtask
 ```json
 {
   "originalRequest": "Create a new website for my business",
+  "outputPath": "C:/Users/username/Documents/website-project-plan.md",
+  "dependencies": [
+    {
+      "name": "Node.js",
+      "version": ">=14.0.0",
+      "description": "JavaScript runtime"
+    },
+    {
+      "name": "npm",
+      "version": ">=6.0.0",
+      "description": "Package manager"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Package Manager Preference",
+      "content": "User prefers pnpm over npm for package management."
+    },
+    {
+      "title": "Design Guidelines",
+      "content": "Follow the company's brand guidelines for colors and typography."
+    }
+  ],
   "tasks": [
     {
       "title": "Design homepage",
       "description": "Create a design for the homepage with logo, navigation, and hero section",
+      "dependencies": [
+        {
+          "name": "Figma",
+          "description": "Design tool"
+        }
+      ],
       "subtasks": [
         {
           "title": "Design logo",
@@ -112,7 +146,17 @@ Register a new user request and plan its associated tasks (with optional subtask
     },
     {
       "title": "Implement HTML/CSS",
-      "description": "Convert the design to HTML and CSS"
+      "description": "Convert the design to HTML and CSS",
+      "dependencies": [
+        {
+          "name": "HTML5",
+          "description": "Markup language"
+        },
+        {
+          "name": "CSS3",
+          "description": "Styling language"
+        }
+      ]
     }
   ]
 }
@@ -275,6 +319,71 @@ Delete a subtask from a task.
   "requestId": "req-1",
   "taskId": "task-1",
   "subtaskId": "subtask-1"
+}
+```
+
+### `export_task_status`
+
+Export the current status of all tasks in a request to a file. It's recommended to use absolute paths for more reliable file creation.
+
+```json
+{
+  "requestId": "req-1",
+  "outputPath": "C:/Users/username/Documents/task-status.md",
+  "format": "markdown"
+}
+```
+
+### `add_note`
+
+Add a note to a request.
+
+```json
+{
+  "requestId": "req-1",
+  "title": "Package Manager Preference",
+  "content": "User prefers pnpm over npm for package management."
+}
+```
+
+### `update_note`
+
+Update an existing note.
+
+```json
+{
+  "requestId": "req-1",
+  "noteId": "note-1",
+  "title": "Package Manager Preference",
+  "content": "User prefers pnpm over npm and yarn for package management."
+}
+```
+
+### `delete_note`
+
+Delete a note from a request.
+
+```json
+{
+  "requestId": "req-1",
+  "noteId": "note-1"
+}
+```
+
+### `add_dependency`
+
+Add a dependency to a request or task.
+
+```json
+{
+  "requestId": "req-1",
+  "taskId": "task-1",
+  "dependency": {
+    "name": "react",
+    "version": "^18.2.0",
+    "description": "JavaScript library for building user interfaces",
+    "url": "https://reactjs.org"
+  }
 }
 ```
 
