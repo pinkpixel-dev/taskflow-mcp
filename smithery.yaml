@@ -1,4 +1,9 @@
-version: 1
 startCommand:
-  command: ["node", "dist/index.js"]
-port: 8000
+  type: stdio
+  configSchema: {}
+  commandFunction: |-
+    (config) => ({
+      "command": "node",
+        "args": ["dist/index.js"],
+        "env": {}
+      })
