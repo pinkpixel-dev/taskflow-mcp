@@ -1,6 +1,5 @@
 FROM node:22.12-alpine AS builder
 
-# Must be entire project because `prepare` script is run during `npm install` and requires all files.
 COPY . /app
 COPY tsconfig.json /tsconfig.json
 
@@ -20,4 +19,4 @@ ENV NODE_ENV=production
 
 RUN npm ci --ignore-scripts --omit-dev
 
-ENTRYPOINT ["node", "dist/index.js"]
+CMD ["node", "dist/index.js"]
