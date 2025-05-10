@@ -20,13 +20,26 @@ The server exposes a set of tools that AI assistants can use to create, manage, 
 
 ### Data Model
 
-1. **Subtask**: Represents a smaller unit of work within a task with properties:
+1. **Dependency**: Represents a project or task dependency with properties:
+   - `name`: Name of the dependency
+   - `version`: Optional version of the dependency
+   - `url`: Optional URL for the dependency
+   - `description`: Optional description of the dependency
+
+2. **Note**: Represents a project-level note with properties:
+   - `id`: Unique identifier for the note
+   - `title`: Title of the note
+   - `content`: Content of the note
+   - `createdAt`: Timestamp when the note was created
+   - `updatedAt`: Timestamp when the note was last updated
+
+3. **Subtask**: Represents a smaller unit of work within a task with properties:
    - `id`: Unique identifier for the subtask
    - `title`: Short title describing the subtask
    - `description`: Detailed description of the subtask
    - `done`: Boolean indicating if the subtask is completed
 
-2. **Task**: Represents a single task with properties:
+4. **Task**: Represents a single task with properties:
    - `id`: Unique identifier for the task
    - `title`: Short title describing the task
    - `description`: Detailed description of the task
@@ -34,15 +47,18 @@ The server exposes a set of tools that AI assistants can use to create, manage, 
    - `approved`: Boolean indicating if the task completion has been approved by the user
    - `completedDetails`: Optional details about how the task was completed
    - `subtasks`: Array of Subtask objects
+   - `dependencies`: Optional array of Dependency objects
 
-2. **RequestEntry**: Represents a user request with properties:
+5. **RequestEntry**: Represents a user request with properties:
    - `requestId`: Unique identifier for the request
    - `originalRequest`: The original text of the user's request
    - `splitDetails`: Optional detailed breakdown of the request
    - `tasks`: Array of Task objects
    - `completed`: Boolean indicating if the entire request has been completed and approved
+   - `dependencies`: Optional array of Dependency objects
+   - `notes`: Optional array of Note objects
 
-3. **TaskFlowFile**: The top-level structure that contains an array of requests.
+6. **TaskFlowFile**: The top-level structure that contains an array of requests.
 
 ### Workflow
 

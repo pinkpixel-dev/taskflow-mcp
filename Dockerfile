@@ -1,21 +1,16 @@
-FROM node:18-alpine
+FROM node:18
 
-WORKDIR /app
-
-# Copy package files first for better caching
+# Copy package files
 COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
-# Copy the rest of the application
+# Copy application code
 COPY . .
 
 # Build the application
 RUN npm run build
 
-# Expose the port the server will run on
-EXPOSE 8000
-
-# Start the server
+# Command will be provided by smithery.yaml
 CMD ["node", "dist/index.js"]

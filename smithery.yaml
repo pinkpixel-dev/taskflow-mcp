@@ -4,6 +4,8 @@ startCommand:
   commandFunction: |-
     (config) => ({
       "command": "node",
-        "args": ["dist/index.js"],
-        "env": {}
-      })
+      "args": ["dist/index.js"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    })
