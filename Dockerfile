@@ -1,16 +1,18 @@
-FROM node:20-slim
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copy package files
 COPY package*.json ./
-RUN npm install --ignore-scripts
 
-# Copy the rest of the application
+# Install dependencies
+RUN npm install
+
+# Copy application code
 COPY . .
 
-# Expose port if needed (optional, as MCP servers might not require it)
-EXPOSE 8000
+# Build the application
+RUN npm run build
 
-# Run the MCP server
+# Command will be provided by smithery.yaml
 CMD ["node", "dist/index.js"]
