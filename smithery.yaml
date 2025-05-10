@@ -1,3 +1,4 @@
 version: 1
-startCommand: ["node", "dist/index.js"]
+startCommand:
+  command: ["node", "dist/index.js"]
 port: 8000
