@@ -73,7 +73,10 @@ To use TaskFlow MCP with AI assistants, you need to configure your MCP client to
   "mcpServers": {
     "taskflow": {
       "command": "npx",
-      "args": ["-y", "@pinkpixel/taskflow-mcp"]
+      "args": ["-y", "@pinkpixel/taskflow-mcp"],
+      "env": {
+        "TASK_MANAGER_FILE_PATH": "/path/to/tasks.json"
+      }
     }
   }
 }

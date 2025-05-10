@@ -2,7 +2,10 @@
   "mcpServers": {
     "taskflow": {
       "command": "npx",
-      "args": ["-y", "@pinkpixel/taskflow-mcp"]
+      "args": ["-y", "@pinkpixel/taskflow-mcp"],
+      "env": {
+        "TASK_MANAGER_FILE_PATH": "/path/to/tasks.json"
+      }
     }
   }
 }

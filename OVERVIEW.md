@@ -1,5 +1,7 @@
 # TaskFlow MCP - Project Overview
 
+*Last updated: May 10, 2025*
+
 ## Introduction
 
 TaskFlow MCP is a Model Context Protocol (MCP) server that implements a task management system designed to work with AI assistants like Claude. It helps break down user requests into manageable tasks and tracks their completion through a structured workflow that includes user approval steps.
