@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/pinkpixel-dev-taskflow-mcp-badge.png)](https://mseep.ai/app/pinkpixel-dev-taskflow-mcp)
+
 # TaskFlow MCP 🔄✅
 
 <p align="center">
