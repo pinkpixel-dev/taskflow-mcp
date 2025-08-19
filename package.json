@@ -1,6 +1,6 @@
 {
 	"name": "@pinkpixel/taskflow-mcp",
-  "version": "1.3.2",
+  "version": "1.3.3",
 	"description": "Task manager Model Context Protocol (MCP) server for planning and executing tasks.",
 	"author": "Pink Pixel",
 	"main": "dist/index.js",

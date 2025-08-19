@@ -1,6 +1,6 @@
 # TaskFlow MCP - Project Overview
 
-*Last updated: August 19, 2025*
+*Last updated: January 5, 2025*
 
 ## Introduction
 
@@ -8,7 +8,7 @@ TaskFlow MCP is a Model Context Protocol (MCP) server that implements a task man
 
 The server exposes a set of tools that AI assistants can use to create, manage, and track tasks within user requests. It enforces a specific workflow that ensures tasks are properly tracked and approved by users before proceeding to the next task.
 
-**Current Version:** 1.3.2
+**Current Version:** 1.3.3
 
 ## Project Architecture
 
@@ -18,7 +18,7 @@ The server exposes a set of tools that AI assistants can use to create, manage, 
 
 2. **MCP Server Integration**: Uses the `@modelcontextprotocol/sdk` to expose functionality as tools that can be called by AI assistants.
 
-3. **Data Persistence**: Tasks and requests are stored in a JSON file (default: `~/Documents/tasks.json`), which can be configured via an environment variable.
+3. **Data Persistence**: Tasks and requests are stored in JSON or YAML format (default: `~/Documents/tasks.json`), with automatic format detection based on file extension and configurable via environment variable.
 
 4. **Tool Definitions**: A set of tools that AI assistants can call to interact with the task manager.
 
@@ -89,7 +89,9 @@ This workflow ensures that tasks are properly tracked and that the user has visi
 8. **Export Options**: Export task plans and status reports in Markdown, JSON, or HTML formats
 9. **Dependencies**: Track project and task-level dependencies with version information
 10. **Notes**: Add project-level notes for important information and preferences
-11. **System Prompts**: Example system prompts for AI assistants to consistently use the tools
+11. **YAML Support**: Save tasks in YAML format for better handling of multiline content and human-readable files
+12. **Robust Text Handling**: Comprehensive newline sanitization to prevent corruption of multiline descriptions
+13. **System Prompts**: Example system prompts for AI assistants to consistently use the tools
 
 ## Technical Implementation
 
@@ -99,6 +101,7 @@ This workflow ensures that tasks are properly tracked and that the user has visi
 2. **Zod**: For schema validation of inputs
 3. **Model Context Protocol (MCP) SDK**: For creating a server that can be used by AI assistants
 4. **Node.js fs/promises API**: For file operations to persist task data
+5. **js-yaml**: For YAML parsing and serialization support
 
 ### Project Structure
 
@@ -130,7 +133,7 @@ The TaskFlow MCP server exposes the following tools to AI assistants:
 
 The TaskFlow MCP server can be configured in the following ways:
 
-1. **Task File Path**: Set the `TASK_MANAGER_FILE_PATH` environment variable to specify where tasks should be stored (default: `~/Documents/tasks.json`)
+1. **Task File Path**: Set the `TASK_MANAGER_FILE_PATH` environment variable to specify where tasks should be stored (default: `~/Documents/tasks.json`). The format (JSON or YAML) is automatically detected based on the file extension (`.json`, `.yaml`, or `.yml`).
 
 2. **MCP Configuration**: The `mcp_config.json` file defines how the MCP server should be launched, specifying that it should be run using `npx` with the `@pinkpixel-dev/taskflow-mcp` package.
 

@@ -5,6 +5,24 @@ All notable changes to the TaskFlow MCP project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.3] - 2025-01-05
+
+### Added
+
+- YAML format support for task data persistence
+  - Tasks can now be saved in YAML format by configuring the file path with `.yaml` or `.yml` extension
+  - Automatic format detection based on file extension during load and save operations
+  - YAML format better preserves multiline descriptions and complex text content
+  - Maintains backward compatibility with existing JSON format
+
+### Fixed
+
+- Robust newline handling in task descriptions and subtask descriptions
+  - Fixed corrupted newline patterns like 'nn' and 'n-' that were appearing in saved data
+  - Implemented comprehensive string sanitization to normalize various newline formats
+  - Ensured proper preservation of multiline content in both JSON and YAML formats
+  - Fixed issues where newlines were being incorrectly escaped or replaced during save operations
+
 ## [1.3.2] - 2025-08-19
 
 ### Changed

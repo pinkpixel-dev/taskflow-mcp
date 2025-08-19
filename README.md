@@ -12,7 +12,7 @@ A task management Model Context Protocol (MCP) server for planning and executing
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@pinkpixel-dev/taskflow-mcp/badge" alt="TaskFlow MCP server" />
 </a>
 
-![Version](https://img.shields.io/badge/version-1.3.2-blue)
+![Version](https://img.shields.io/badge/version-1.3.3-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## 🌟 Overview
@@ -31,6 +31,8 @@ TaskFlow MCP is a specialized server that helps AI assistants break down user re
 - 📤 **Export Options**: Export task plans and status reports in Markdown, JSON, or HTML formats
 - 📦 **Dependencies**: Track project and task-level dependencies with version information
 - 📌 **Notes**: Add project-level notes for important information and preferences
+- 📄 **YAML Support**: Save tasks in YAML format for better handling of multiline content
+- 🛡️ **Robust Text Handling**: Comprehensive newline sanitization for reliable data persistence
 
 ## 🚀 Installation
 
@@ -70,6 +72,21 @@ By default, TaskFlow MCP saves tasks to `~/Documents/tasks.json`. You can change
 TASK_MANAGER_FILE_PATH=/path/to/tasks.json taskflow-mcp
 ```
 
+#### YAML Format Support
+
+TaskFlow MCP supports both JSON and YAML formats for data persistence. To use YAML format, simply configure your file path with a `.yaml` or `.yml` extension:
+
+```bash
+TASK_MANAGER_FILE_PATH=/path/to/tasks.yaml taskflow-mcp
+```
+
+YAML format is particularly useful for:
+- Better preservation of multiline descriptions and text content
+- More human-readable task data files
+- Easier manual editing if needed
+
+The format is automatically detected based on the file extension, and the system maintains full backward compatibility with existing JSON files.
+
 ### MCP Configuration
 
 To use TaskFlow MCP with AI assistants, you need to configure your MCP client to use the server. Create an `mcp_config.json` file with the following content:
@@ -82,6 +99,22 @@ To use TaskFlow MCP with AI assistants, you need to configure your MCP client to
       "args": ["-y", "@pinkpixel/taskflow-mcp"],
       "env": {
         "TASK_MANAGER_FILE_PATH": "/path/to/tasks.json"
+      }
+    }
+  }
+}
+```
+
+For YAML format:
+
+```json
+{
+  "mcpServers": {
+    "taskflow": {
+      "command": "npx",
+      "args": ["-y", "@pinkpixel/taskflow-mcp"],
+      "env": {
+        "TASK_MANAGER_FILE_PATH": "/path/to/tasks.yaml"
       }
     }
   }
