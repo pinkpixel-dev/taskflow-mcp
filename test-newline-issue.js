@@ -4,7 +4,7 @@
  * This script creates a task with multiline description to test the issue
  */
 
-import { TaskFlowServer } from './index.js';
+import { TaskFlowServer } from './dist/index.js';
 
 async function testNewlineHandling() {
   console.log('🧪 Testing newline handling issue #4...');
