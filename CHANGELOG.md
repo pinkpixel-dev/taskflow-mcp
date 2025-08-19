@@ -5,6 +5,26 @@ All notable changes to the TaskFlow MCP project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2025-08-19
+
+### Changed
+
+- Simplified approval workflow to use direct user confirmation instead of dedicated approval tools
+- Updated tool descriptions to clarify the approval process
+- Streamlined progress reporting by removing approval status columns
+
+### Removed
+
+- Removed unused approval tool schemas (`ApproveTaskCompletionSchema` and `ApproveRequestCompletionSchema`)
+- Removed approval status tracking from progress tables and status reports
+- Removed approval counts from request summaries
+
+### Fixed
+
+- Fixed workflow clarity by removing references to non-existent approval tools
+- Improved user experience by eliminating confusion around approval tool calls
+- Enhanced documentation consistency across all tool descriptions
+
 ## [1.2.1] - 2025-05-10
 
 ### Fixed

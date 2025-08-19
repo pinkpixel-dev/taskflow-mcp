@@ -1,12 +1,14 @@
 # TaskFlow MCP - Project Overview
 
-*Last updated: May 10, 2025*
+*Last updated: August 19, 2025*
 
 ## Introduction
 
 TaskFlow MCP is a Model Context Protocol (MCP) server that implements a task management system designed to work with AI assistants like Claude. It helps break down user requests into manageable tasks and tracks their completion through a structured workflow that includes user approval steps.
 
 The server exposes a set of tools that AI assistants can use to create, manage, and track tasks within user requests. It enforces a specific workflow that ensures tasks are properly tracked and approved by users before proceeding to the next task.
+
+**Current Version:** 1.3.2
 
 ## Project Architecture
 
@@ -46,7 +48,6 @@ The server exposes a set of tools that AI assistants can use to create, manage, 
    - `title`: Short title describing the task
    - `description`: Detailed description of the task
    - `done`: Boolean indicating if the task is completed
-   - `approved`: Boolean indicating if the task completion has been approved by the user
    - `completedDetails`: Optional details about how the task was completed
    - `subtasks`: Array of Subtask objects
    - `dependencies`: Optional array of Dependency objects
@@ -70,11 +71,11 @@ The TaskFlow MCP server enforces a specific workflow:
 2. **Get Next Task**: Retrieve the next pending task
 3. **Complete Subtasks**: If the task has subtasks, complete each subtask before marking the task as done
 4. **Mark Task Done**: Mark a task as completed (requires all subtasks to be completed first)
-5. **Wait for Approval**: Wait for user approval of the completed task
+5. **Wait for User Confirmation**: Ask the user to confirm the completed task before proceeding
 6. **Repeat**: Continue with the next task until all tasks are complete
-7. **Final Approval**: Get user approval for the entire request
+7. **Final Confirmation**: Confirm with the user that the entire request has been completed
 
-This workflow ensures that tasks are properly tracked and that the user has visibility and control over the process. The addition of subtasks allows for more granular tracking of progress and helps break down complex tasks into more manageable pieces.
+This workflow ensures that tasks are properly tracked and that the user has visibility and control over the process. The simplified approval process relies on direct user confirmation rather than dedicated approval tools, making the workflow more intuitive while maintaining user control. The addition of subtasks allows for more granular tracking of progress and helps break down complex tasks into more manageable pieces.
 
 ## Key Features
 
@@ -110,22 +111,20 @@ The TaskFlow MCP server exposes the following tools to AI assistants:
 1. **plan_task**: Register a new user request and plan its associated tasks (with optional subtasks, dependencies, notes, and outputPath)
 2. **get_next_task**: Retrieve the next pending task for a request
 3. **mark_task_done**: Mark a task as completed (requires all subtasks to be completed first)
-4. **approve_task_completion**: Approve a completed task
-5. **approve_request_completion**: Approve an entire request as completed
-6. **open_task_details**: Get details about a specific task (including its subtasks)
-7. **list_requests**: List all requests in the system
-8. **add_tasks_to_request**: Add more tasks to an existing request
-9. **update_task**: Update a task's title or description
-10. **delete_task**: Delete a task from a request
-11. **add_subtasks**: Add subtasks to an existing task
-12. **mark_subtask_done**: Mark a subtask as completed
-13. **update_subtask**: Update a subtask's title or description
-14. **delete_subtask**: Delete a subtask from a task
-15. **export_task_status**: Export the current status of all tasks to a file (markdown, JSON, or HTML)
-16. **add_note**: Add a note to a request
-17. **update_note**: Update an existing note
-18. **delete_note**: Delete a note from a request
-19. **add_dependency**: Add a dependency to a request or task
+4. **open_task_details**: Get details about a specific task (including its subtasks)
+5. **list_requests**: List all requests in the system
+6. **add_tasks_to_request**: Add more tasks to an existing request
+7. **update_task**: Update a task's title or description
+8. **delete_task**: Delete a task from a request
+9. **add_subtasks**: Add subtasks to an existing task
+10. **mark_subtask_done**: Mark a subtask as completed
+11. **update_subtask**: Update a subtask's title or description
+12. **delete_subtask**: Delete a subtask from a task
+13. **export_task_status**: Export the current status of all tasks to a file (markdown, JSON, or HTML)
+14. **add_note**: Add a note to a request
+15. **update_note**: Update an existing note
+16. **delete_note**: Delete a note from a request
+17. **add_dependency**: Add a dependency to a request or task
 
 ## Configuration
 
@@ -264,13 +263,6 @@ The TaskFlow MCP server can be configured in the following ways:
    }
    ```
 
-9. **Approve Task Completion**:
-   ```json
-   {
-     "requestId": "req-1",
-     "taskId": "task-1"
-   }
-   ```
 
 ## Future Enhancements
 

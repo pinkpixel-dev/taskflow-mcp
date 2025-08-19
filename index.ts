@@ -12,6 +12,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
 import { z } from "zod";
+import * as yaml from "js-yaml";
 
 const DEFAULT_PATH = path.join(os.homedir(), "Documents", "tasks.json");
 const TASK_FILE_PATH = process.env.TASK_MANAGER_FILE_PATH || DEFAULT_PATH;
@@ -107,14 +108,6 @@ const MarkTaskDoneSchema = z.object({
   completedDetails: z.string().optional(),
 });
 
-const ApproveTaskCompletionSchema = z.object({
-  requestId: z.string(),
-  taskId: z.string(),
-});
-
-const ApproveRequestCompletionSchema = z.object({
-  requestId: z.string(),
-});
 
 const OpenTaskDetailsSchema = z.object({
   taskId: z.string(),
@@ -174,7 +167,8 @@ const DeleteSubtaskSchema = z.object({
 
 const ExportTaskStatusSchema = z.object({
   requestId: z.string(),
-  outputPath: z.string(),
+  outputPath: z.string().optional(),
+  filename: z.string().optional(),
   format: z.enum(["markdown", "json", "html"]).default("markdown"),
 });
 
@@ -218,12 +212,12 @@ const PLAN_TASK_TOOL: Tool = {
     "2. After adding tasks, you MUST use 'get_next_task' to retrieve the first task. A progress table will be displayed.\n" +
     "3. Use 'get_next_task' to retrieve the next uncompleted task.\n" +
     "4. If the task has subtasks, complete each subtask using 'mark_subtask_done' before marking the task as done.\n" +
-    "5. **IMPORTANT:** After marking a task as done, a progress table will be displayed showing the updated status of all tasks. The assistant MUST NOT proceed to another task without the user's approval. The user must explicitly approve the completed task.\n" +
-    "6. Once a task is approved, you can proceed to 'get_next_task' again to fetch the next pending task.\n" +
+    "5. **IMPORTANT:** After marking a task as done, a progress table will be displayed showing the updated status of all tasks. The assistant MUST NOT proceed to another task without the user's approval. Ask the user for approval before proceeding.\n" +
+    "6. Once the user approves the completed task, you can proceed to 'get_next_task' again to fetch the next pending task.\n" +
     "7. Repeat this cycle until all tasks are done.\n" +
-    "8. After all tasks are completed (and approved), 'get_next_task' will indicate that all tasks are done and that the request awaits approval for full completion.\n" +
-    "9. The user must then approve the entire request's completion. If the user does not approve and wants more tasks, you can again use 'plan_task' to add new tasks and continue the cycle.\n\n" +
-    "The critical point is to always wait for user approval after completing each task and after all tasks are done, wait for request completion approval. Do not proceed automatically.",
+    "8. After all tasks are completed, 'get_next_task' will indicate that all tasks are done. At this point, ask the user for confirmation that the entire request has been completed satisfactorily.\n" +
+    "9. If the user wants more tasks, you can use 'add_tasks_to_request' or 'plan_task' to add new tasks and continue the cycle.\n\n" +
+    "The critical point is to always wait for user approval after completing each task and after all tasks are done. Do not proceed automatically, UNLESS the user has explicitly told you to continue with all tasks and that you do not need approval.",
   inputSchema: {
     type: "object",
     properties: {
@@ -301,8 +295,8 @@ const GET_NEXT_TASK_TOOL: Tool = {
     "A progress table showing the current status of all tasks will be displayed with each response.\n\n" +
     "If the same task is returned again or if no new task is provided after a task was marked as done, you MUST NOT proceed. In such a scenario, you must prompt the user for approval before calling 'get_next_task' again. Do not skip the user's approval step.\n" +
     "In other words:\n" +
-    "- After calling 'mark_task_done', do not call 'get_next_task' again until 'approve_task_completion' is called by the user.\n" +
-    "- If 'get_next_task' returns 'all_tasks_done', it means all tasks have been completed. At this point, confirm with the user that all tasks have been completed, and optionally add more tasks via 'plan_task'.",
+    "- After calling 'mark_task_done', do not call 'get_next_task' again until the user has given approval for the completed task.\n" +
+    "- If 'get_next_task' returns 'all_tasks_done', it means all tasks have been completed. At this point, confirm with the user that all tasks have been completed, and optionally add more tasks via 'add_tasks_to_request' or 'plan_task'.",
   inputSchema: {
     type: "object",
     properties: {
@@ -317,7 +311,7 @@ const MARK_TASK_DONE_TOOL: Tool = {
   description:
     "Mark a given task as done after you've completed it. Provide 'requestId' and 'taskId', and optionally 'completedDetails'.\n\n" +
     "After marking a task as done, a progress table will be displayed showing the updated status of all tasks.\n\n" +
-    "After this, DO NOT proceed to 'get_next_task' again until the user has explicitly approved this completed task using 'approve_task_completion'.",
+    "After this, DO NOT proceed to 'get_next_task' again until the user has explicitly approved the completed task. Ask the user for approval before continuing.",
   inputSchema: {
     type: "object",
     properties: {
@@ -517,21 +511,35 @@ const EXPORT_TASK_STATUS_TOOL: Tool = {
   name: "export_task_status",
   description:
     "Export the current status of all tasks in a request to a file.\n\n" +
-    "This tool allows you to save the current state of tasks, subtasks, dependencies, and notes to a file for reference.\n\n" +
-    "You can specify the output format as 'markdown', 'json', or 'html'.\n\n" +
-    "It's recommended to use absolute paths (e.g., 'C:/Users/username/Documents/task-status.md') rather than relative paths for more reliable file creation.",
+    "This tool saves the current state of tasks, subtasks, dependencies, and notes to a file for reference.\n\n" +
+    "You can specify:\n" +
+    "- 'format': 'markdown', 'json', or 'html'\n" +
+    "- 'outputPath': Full path to save the file, or just a directory path\n" +
+    "- 'filename': Optional custom filename (auto-generated if not provided)\n\n" +
+    "Path handling:\n" +
+    "- If outputPath is a directory, filename will be auto-generated as '{project-name}_tasks.{ext}'\n" +
+    "- If outputPath includes filename, it will be used as-is\n" +
+    "- Relative paths are resolved from current working directory\n" +
+    "- If no path specified, saves to current working directory",
   inputSchema: {
     type: "object",
     properties: {
       requestId: { type: "string" },
-      outputPath: { type: "string" },
+      outputPath: { 
+        type: "string",
+        description: "Directory or full file path where to save the export"
+      },
+      filename: {
+        type: "string",
+        description: "Optional custom filename (auto-generated if not provided)"
+      },
       format: {
         type: "string",
         enum: ["markdown", "json", "html"],
         default: "markdown"
       },
     },
-    required: ["requestId", "outputPath"],
+    required: ["requestId"],
   },
 };
 
@@ -618,10 +626,71 @@ class TaskFlowServer {
     this.loadTasks();
   }
 
+  /**
+   * Sanitize and fix newline characters in strings
+   * This addresses the issue where \n characters get corrupted during transmission
+   */
+  private sanitizeString(input: string): string {
+    if (typeof input !== 'string') {
+      return String(input);
+    }
+    
+    // Fix common newline corruption patterns found in issue #4
+    // Replace corrupted patterns like 'nn' or 'n-' back to proper newlines
+    return input
+      // Fix the specific pattern from issue #4: "instructions.mdnnFiles" -> "instructions.md\n\nFiles"
+      .replace(/\.md(nn|n)(?=[A-Z])/g, '.md\n\n')
+      // Fix other 'nn' patterns that should be double newlines
+      .replace(/(\w)(nn)(?=[A-Z])/g, '$1\n\n')
+      // Fix single 'n' followed by dash (common pattern)
+      .replace(/(\w)(n)(-)/g, '$1\n$3')
+      // Fix standalone 'n' that should be newlines when followed by list items
+      .replace(/(\w)(n)(?=[-*•])/g, '$1\n')
+      // General cleanup: if we have literal \n sequences, preserve them
+      .replace(/\\n/g, '\n');
+  }
+
+  /**
+   * Sanitize task data to fix newline issues
+   */
+  private sanitizeTaskData(data: any): any {
+    if (typeof data === 'string') {
+      return this.sanitizeString(data);
+    }
+    
+    if (Array.isArray(data)) {
+      return data.map(item => this.sanitizeTaskData(item));
+    }
+    
+    if (data && typeof data === 'object') {
+      const sanitized: any = {};
+      for (const [key, value] of Object.entries(data)) {
+        sanitized[key] = this.sanitizeTaskData(value);
+      }
+      return sanitized;
+    }
+    
+    return data;
+  }
+
   private async loadTasks() {
     try {
       const data = await fs.readFile(TASK_FILE_PATH, "utf-8");
-      this.data = JSON.parse(data);
+      const extension = path.extname(TASK_FILE_PATH).toLowerCase();
+      
+      if (extension === '.yaml' || extension === '.yml') {
+        // Parse as YAML
+        const parsed = yaml.load(data);
+        if (typeof parsed === 'object' && parsed !== null) {
+          this.data = parsed as TaskFlowFile;
+        } else {
+          throw new Error('Invalid YAML structure');
+        }
+      } else {
+        // Parse as JSON (default)
+        this.data = JSON.parse(data);
+      }
+      
       const allTaskIds: number[] = [];
       const allRequestIds: number[] = [];
 
@@ -642,15 +711,32 @@ class TaskFlowServer {
         allRequestIds.length > 0 ? Math.max(...allRequestIds) : 0;
       this.taskCounter = allTaskIds.length > 0 ? Math.max(...allTaskIds) : 0;
     } catch (error) {
+      console.warn(`Error loading tasks from ${TASK_FILE_PATH}:`, error instanceof Error ? error.message : error);
       this.data = { requests: [] };
     }
   }
 
   private async saveTasks() {
     try {
+      const extension = path.extname(TASK_FILE_PATH).toLowerCase();
+      let content: string;
+      
+      if (extension === '.yaml' || extension === '.yml') {
+        // Save as YAML with proper multiline handling
+        content = yaml.dump(this.data, {
+          indent: 2,
+          lineWidth: -1, // Don't wrap long lines
+          noRefs: true,  // Don't use references
+          sortKeys: false // Keep original key order
+        });
+      } else {
+        // Save as JSON (default)
+        content = JSON.stringify(this.data, null, 2);
+      }
+      
       await fs.writeFile(
         TASK_FILE_PATH,
-        JSON.stringify(this.data, null, 2),
+        content,
         "utf-8"
       );
     } catch (error) {
@@ -667,25 +753,24 @@ class TaskFlowServer {
     if (!req) return "Request not found";
 
     let table = "\nProgress Status:\n";
-    table += "| Task ID | Title | Description | Status | Approval | Subtasks |\n";
-    table += "|----------|----------|------|------|----------|----------|\n";
+    table += "| Task ID | Title | Description | Status | Subtasks |\n";
+    table += "|----------|----------|------|------|----------|\n";
 
     for (const task of req.tasks) {
       const status = task.done ? "✅ Done" : "🔄 In Progress";
-      const approved = task.approved ? "✅ Approved" : "⏳ Pending";
       const subtaskCount = task.subtasks.length;
       const completedSubtasks = task.subtasks.filter(s => s.done).length;
       const subtaskStatus = subtaskCount > 0
         ? `${completedSubtasks}/${subtaskCount}`
         : "None";
 
-      table += `| ${task.id} | ${task.title} | ${task.description} | ${status} | ${approved} | ${subtaskStatus} |\n`;
+      table += `| ${task.id} | ${task.title} | ${task.description} | ${status} | ${subtaskStatus} |\n`;
 
       // Add subtasks with indentation if they exist
       if (subtaskCount > 0) {
         for (const subtask of task.subtasks) {
           const subtaskStatus = subtask.done ? "✅ Done" : "🔄 In Progress";
-          table += `| └─ ${subtask.id} | ${subtask.title} | ${subtask.description} | ${subtaskStatus} | - | - |\n`;
+          table += `| └─ ${subtask.id} | ${subtask.title} | ${subtask.description} | ${subtaskStatus} | - |\n`;
         }
       }
     }
@@ -799,11 +884,93 @@ class TaskFlowServer {
   }
 
   /**
+   * Generate a safe filename from a string
+   */
+  private generateSafeFilename(text: string): string {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+      .substring(0, 50); // Limit length
+  }
+
+  /**
+   * Resolve the final export path with proper filename
+   */
+  private async resolveExportPath(
+    req: RequestEntry,
+    outputPath?: string,
+    filename?: string,
+    format: "markdown" | "json" | "html" = "markdown"
+  ): Promise<string> {
+    // Get file extension based on format
+    const extensions = {
+      markdown: 'md',
+      json: 'json',
+      html: 'html'
+    };
+    const ext = extensions[format];
+
+    // Generate default filename based on project name
+    const projectName = this.generateSafeFilename(req.originalRequest);
+    const defaultFilename = `${projectName}_tasks.${ext}`;
+
+    // If no outputPath provided, use current working directory
+    if (!outputPath) {
+      return path.resolve(process.cwd(), filename || defaultFilename);
+    }
+
+    // Resolve the output path
+    const resolvedPath = path.resolve(outputPath);
+
+    try {
+      // Check if the path is a directory
+      const stats = await fs.stat(resolvedPath).catch(() => null);
+      const isDirectory = stats?.isDirectory() ?? false;
+      
+      // If it's an existing directory, or if it ends with / or \, treat as directory
+      if (isDirectory || outputPath.endsWith('/') || outputPath.endsWith('\\')) {
+        return path.join(resolvedPath, filename || defaultFilename);
+      }
+      
+      // If path has an extension, use as-is
+      if (path.extname(resolvedPath)) {
+        return resolvedPath;
+      }
+      
+      // Otherwise, treat as directory and add filename
+      return path.join(resolvedPath, filename || defaultFilename);
+    } catch (error) {
+      // If we can't stat the path, check if it looks like a directory
+      if (outputPath.endsWith('/') || outputPath.endsWith('\\')) {
+        return path.join(resolvedPath, filename || defaultFilename);
+      }
+      
+      // If it has no extension, treat as directory
+      if (!path.extname(outputPath)) {
+        return path.join(resolvedPath, filename || defaultFilename);
+      }
+      
+      return resolvedPath;
+    }
+  }
+
+  /**
    * Export task status to a file in the specified format
    */
-  public async exportTaskStatus(requestId: string, outputPath: string, format: "markdown" | "json" | "html" = "markdown"): Promise<void> {
+  public async exportTaskStatus(
+    requestId: string,
+    outputPath?: string,
+    filename?: string,
+    format: "markdown" | "json" | "html" = "markdown"
+  ): Promise<{ outputPath: string; format: string }> {
     const req = this.data.requests.find((r) => r.requestId === requestId);
     if (!req) throw new Error("Request not found");
+
+    // Resolve the final export path
+    const finalPath = await this.resolveExportPath(req, outputPath, filename, format);
 
     let content = "";
 
@@ -822,14 +989,19 @@ class TaskFlowServer {
     }
 
     try {
-      await fs.writeFile(outputPath, content, "utf-8");
+      // Ensure directory exists
+      const dir = path.dirname(finalPath);
+      await fs.mkdir(dir, { recursive: true });
+      
+      // Write the file
+      await fs.writeFile(finalPath, content, "utf-8");
+      
+      return { outputPath: finalPath, format };
     } catch (error: unknown) {
-      console.error(`Error writing to file ${outputPath}:`, error);
+      console.error(`Error writing to file ${finalPath}:`, error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to write to file: ${errorMessage}`);
+      throw new Error(`Failed to write to file ${finalPath}: ${errorMessage}`);
     }
-
-    return;
   }
 
   /**
@@ -843,13 +1015,11 @@ class TaskFlowServer {
     // Overall progress
     const totalTasks = req.tasks.length;
     const completedTasks = req.tasks.filter(t => t.done).length;
-    const approvedTasks = req.tasks.filter(t => t.approved).length;
     const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
     markdown += `## Overall Progress: ${progressPercent}%\n\n`;
     markdown += `- **Total Tasks:** ${totalTasks}\n`;
     markdown += `- **Completed Tasks:** ${completedTasks}\n`;
-    markdown += `- **Approved Tasks:** ${approvedTasks}\n`;
     markdown += `- **Remaining Tasks:** ${totalTasks - completedTasks}\n\n`;
 
     // Add notes if available
@@ -866,12 +1036,10 @@ class TaskFlowServer {
     for (let i = 0; i < req.tasks.length; i++) {
       const task = req.tasks[i];
       const taskStatus = task.done ? "✅ Done" : "🔄 In Progress";
-      const approvalStatus = task.approved ? "✅ Approved" : task.done ? "⏳ Pending Approval" : "⏳ Not Ready";
 
       markdown += `### ${i + 1}. ${task.title} (${taskStatus})\n`;
       markdown += `**Description:** ${task.description}\n\n`;
       markdown += `**Status:** ${taskStatus}\n`;
-      markdown += `**Approval:** ${approvalStatus}\n`;
 
       if (task.done && task.completedDetails) {
         markdown += `**Completion Details:** ${task.completedDetails}\n\n`;
@@ -980,9 +1148,7 @@ class TaskFlowServer {
     for (let i = 0; i < req.tasks.length; i++) {
       const task = req.tasks[i];
       const taskStatusClass = task.done ? "status-done" : "status-progress";
-      const approvalStatusClass = task.approved ? "status-approved" : "status-pending";
       const taskStatus = task.done ? "Done" : "In Progress";
-      const approvalStatus = task.approved ? "Approved" : task.done ? "Pending Approval" : "Not Ready";
 
       html += `
   <div class="task">
@@ -990,8 +1156,7 @@ class TaskFlowServer {
       <h3>${i + 1}. ${task.title}</h3>
       <span class="task-status ${taskStatusClass}">${taskStatus}</span>
     </div>
-    <p><strong>Description:</strong> ${task.description}</p>
-    <p><strong>Approval:</strong> <span class="task-status ${approvalStatusClass}">${approvalStatus}</span></p>`;
+    <p><strong>Description:</strong> ${task.description}</p>`;
 
       if (task.done && task.completedDetails) {
         html += `<p><strong>Completion Details:</strong> ${task.completedDetails}</p>`;
@@ -1057,15 +1222,14 @@ class TaskFlowServer {
   private formatRequestsList(): string {
     let output = "\nRequests List:\n";
     output +=
-      "| Request ID | Original Request | Total Tasks | Completed | Approved |\n";
+      "| Request ID | Original Request | Total Tasks | Completed |\n";
     output +=
-      "|------------|------------------|-------------|-----------|----------|\n";
+      "|------------|------------------|-------------|-----------|\n";
 
     for (const req of this.data.requests) {
       const totalTasks = req.tasks.length;
       const completedTasks = req.tasks.filter((t) => t.done).length;
-      const approvedTasks = req.tasks.filter((t) => t.approved).length;
-      output += `| ${req.requestId} | ${req.originalRequest.substring(0, 30)}${req.originalRequest.length > 30 ? "..." : ""} | ${totalTasks} | ${completedTasks} | ${approvedTasks} |\n`;
+      output += `| ${req.requestId} | ${req.originalRequest.substring(0, 30)}${req.originalRequest.length > 30 ? "..." : ""} | ${totalTasks} | ${completedTasks} |\n`;
     }
 
     return output;
@@ -1088,8 +1252,14 @@ class TaskFlowServer {
     this.requestCounter += 1;
     const requestId = `req-${this.requestCounter}`;
 
+    // Sanitize input data to fix newline issues
+    const sanitizedOriginalRequest = this.sanitizeString(originalRequest);
+    const sanitizedSplitDetails = splitDetails ? this.sanitizeString(splitDetails) : undefined;
+    const sanitizedTasks = this.sanitizeTaskData(tasks);
+    const sanitizedNotes = notes ? this.sanitizeTaskData(notes) : undefined;
+
     const newTasks: Task[] = [];
-    for (const taskDef of tasks) {
+    for (const taskDef of sanitizedTasks) {
       this.taskCounter += 1;
 
       // Process subtasks if they exist
@@ -1099,8 +1269,8 @@ class TaskFlowServer {
           this.taskCounter += 1;
           subtasks.push({
             id: `subtask-${this.taskCounter}`,
-            title: subtaskDef.title,
-            description: subtaskDef.description,
+            title: this.sanitizeString(subtaskDef.title),
+            description: this.sanitizeString(subtaskDef.description),
             done: false,
           });
         }
@@ -1108,8 +1278,8 @@ class TaskFlowServer {
 
       newTasks.push({
         id: `task-${this.taskCounter}`,
-        title: taskDef.title,
-        description: taskDef.description,
+        title: this.sanitizeString(taskDef.title),
+        description: this.sanitizeString(taskDef.description),
         done: false,
         approved: false,
         completedDetails: "",
@@ -1120,13 +1290,13 @@ class TaskFlowServer {
 
     // Process notes if they exist
     const processedNotes: Note[] = [];
-    if (notes && notes.length > 0) {
-      for (const noteDef of notes) {
+    if (sanitizedNotes && sanitizedNotes.length > 0) {
+      for (const noteDef of sanitizedNotes) {
         const now = new Date().toISOString();
         processedNotes.push({
           id: `note-${this.taskCounter++}`,
-          title: noteDef.title,
-          content: noteDef.content,
+          title: this.sanitizeString(noteDef.title),
+          content: this.sanitizeString(noteDef.content),
           createdAt: now,
           updatedAt: now,
         });
@@ -1135,8 +1305,8 @@ class TaskFlowServer {
 
     this.data.requests.push({
       requestId,
-      originalRequest,
-      splitDetails: splitDetails || originalRequest,
+      originalRequest: sanitizedOriginalRequest,
+      splitDetails: sanitizedSplitDetails || sanitizedOriginalRequest,
       tasks: newTasks,
       completed: false,
       dependencies: dependencies,
@@ -1325,7 +1495,6 @@ class TaskFlowServer {
         originalRequest: req.originalRequest,
         totalTasks: req.tasks.length,
         completedTasks: req.tasks.filter((t) => t.done).length,
-        approvedTasks: req.tasks.filter((t) => t.approved).length,
       })),
     };
   }
@@ -1347,6 +1516,10 @@ class TaskFlowServer {
     for (const taskDef of tasks) {
       this.taskCounter += 1;
 
+      // Sanitize task strings
+      const sanitizedTitle = this.sanitizeString(taskDef.title);
+      const sanitizedDescription = this.sanitizeString(taskDef.description);
+
       // Process subtasks if they exist
       const subtasks: Subtask[] = [];
       if (taskDef.subtasks && taskDef.subtasks.length > 0) {
@@ -1354,8 +1527,8 @@ class TaskFlowServer {
           this.taskCounter += 1;
           subtasks.push({
             id: `subtask-${this.taskCounter}`,
-            title: subtaskDef.title,
-            description: subtaskDef.description,
+            title: this.sanitizeString(subtaskDef.title),
+            description: this.sanitizeString(subtaskDef.description),
             done: false,
           });
         }
@@ -1363,8 +1536,8 @@ class TaskFlowServer {
 
       newTasks.push({
         id: `task-${this.taskCounter}`,
-        title: taskDef.title,
-        description: taskDef.description,
+        title: sanitizedTitle,
+        description: sanitizedDescription,
         done: false,
         approved: false,
         completedDetails: "",
@@ -1401,8 +1574,8 @@ class TaskFlowServer {
     if (task.done)
       return { status: "error", message: "Cannot update completed task" };
 
-    if (updates.title) task.title = updates.title;
-    if (updates.description) task.description = updates.description;
+    if (updates.title) task.title = this.sanitizeString(updates.title);
+    if (updates.description) task.description = this.sanitizeString(updates.description);
 
     await this.saveTasks();
 
@@ -1457,8 +1630,8 @@ class TaskFlowServer {
       this.taskCounter += 1;
       newSubtasks.push({
         id: `subtask-${this.taskCounter}`,
-        title: subtaskDef.title,
-        description: subtaskDef.description,
+        title: this.sanitizeString(subtaskDef.title),
+        description: this.sanitizeString(subtaskDef.description),
         done: false,
       });
     }
@@ -1530,8 +1703,8 @@ class TaskFlowServer {
     if (subtask.done)
       return { status: "error", message: "Cannot update completed subtask" };
 
-    if (updates.title) subtask.title = updates.title;
-    if (updates.description) subtask.description = updates.description;
+    if (updates.title) subtask.title = this.sanitizeString(updates.title);
+    if (updates.description) subtask.description = this.sanitizeString(updates.description);
 
     await this.saveTasks();
 
@@ -1592,8 +1765,8 @@ class TaskFlowServer {
 
     const note: Note = {
       id: `note-${this.taskCounter}`,
-      title,
-      content,
+      title: this.sanitizeString(title),
+      content: this.sanitizeString(content),
       createdAt: now,
       updatedAt: now,
     };
@@ -1633,8 +1806,8 @@ class TaskFlowServer {
 
     const note = req.notes[noteIndex];
 
-    if (updates.title) note.title = updates.title;
-    if (updates.content) note.content = updates.content;
+    if (updates.title) note.title = this.sanitizeString(updates.title);
+    if (updates.content) note.content = this.sanitizeString(updates.content);
     note.updatedAt = new Date().toISOString();
 
     await this.saveTasks();
@@ -1723,7 +1896,7 @@ class TaskFlowServer {
 const server = new Server(
   {
     name: "taskflow-mcp",
-    version: "1.1.0",
+                version: "1.3.2",
   },
   {
     capabilities: {
@@ -1928,16 +2101,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!parsed.success) {
           throw new Error(`Invalid arguments: ${parsed.error}`);
         }
-        const { requestId, outputPath, format } = parsed.data;
-        await taskFlowServer.exportTaskStatus(requestId, outputPath, format);
+        const { requestId, outputPath, filename, format } = parsed.data;
+        const result = await taskFlowServer.exportTaskStatus(requestId, outputPath, filename, format);
         return {
           content: [{
             type: "text",
             text: JSON.stringify({
               status: "task_status_exported",
-              message: `Task status has been exported to ${outputPath} in ${format} format.`,
-              outputPath,
-              format,
+              message: `Task status has been exported to ${result.outputPath} in ${result.format} format.`,
+              outputPath: result.outputPath,
+              format: result.format,
             }, null, 2)
           }],
         };

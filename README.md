@@ -12,7 +12,7 @@ A task management Model Context Protocol (MCP) server for planning and executing
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@pinkpixel-dev/taskflow-mcp/badge" alt="TaskFlow MCP server" />
 </a>
 
-![Version](https://img.shields.io/badge/version-1.2.1-blue)
+![Version](https://img.shields.io/badge/version-1.3.2-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## 🌟 Overview
@@ -96,9 +96,9 @@ TaskFlow MCP enforces a specific workflow:
 2. **Get Next Task**: Retrieve the next pending task
 3. **Complete Subtasks**: If the task has subtasks, complete each subtask before marking the task as done
 4. **Mark Task Done**: Mark a task as completed (requires all subtasks to be completed first)
-5. **Wait for Approval**: Wait for user approval of the completed task
+5. **Wait for User Confirmation**: Ask the user to confirm the completed task before proceeding
 6. **Repeat**: Continue with the next task until all tasks are complete
-7. **Final Approval**: Get user approval for the entire request
+7. **Final Confirmation**: Confirm with the user that the entire request has been completed
 
 For AI assistants to consistently follow this workflow, see the [example-system-prompt.md](./example-system-prompt.md) file for system prompts you can add to your assistant's instructions.
 
@@ -197,26 +197,6 @@ Mark a task as completed.
 }
 ```
 
-### `approve_task_completion`
-
-Approve a completed task.
-
-```json
-{
-  "requestId": "req-1",
-  "taskId": "task-1"
-}
-```
-
-### `approve_request_completion`
-
-Approve an entire request as completed.
-
-```json
-{
-  "requestId": "req-1"
-}
-```
 
 ### `open_task_details`
 
