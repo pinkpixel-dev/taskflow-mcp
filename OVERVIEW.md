@@ -1,287 +1,214 @@
 # TaskFlow MCP - Project Overview
 
-*Last updated: January 5, 2025*
+*Last Updated: September 2, 2025*
 
-## Introduction
+## 🎯 Project Information
 
-TaskFlow MCP is a Model Context Protocol (MCP) server that implements a task management system designed to work with AI assistants like Claude. It helps break down user requests into manageable tasks and tracks their completion through a structured workflow that includes user approval steps.
+**Name:** TaskFlow MCP  
+**Version:** 1.3.3  
+**Type:** Model Context Protocol (MCP) Server  
+**Language:** TypeScript  
+**Purpose:** Task management system designed for AI assistants like Claude  
+**Status:** ✅ **PRODUCTION READY** - Fully implemented and published to NPM
 
-The server exposes a set of tools that AI assistants can use to create, manage, and track tasks within user requests. It enforces a specific workflow that ensures tasks are properly tracked and approved by users before proceeding to the next task.
+## 📋 Project Description
 
-**Current Version:** 1.3.3
+TaskFlow MCP is a comprehensive Model Context Protocol server that provides AI assistants with sophisticated task management capabilities. It enables the breakdown of complex user requests into manageable tasks and subtasks, with comprehensive progress tracking and user approval workflows.
 
-## Project Architecture
+## ✨ Key Features
+
+### Core Functionality
+- **Task Planning:** Break down user requests into manageable tasks with subtask support
+- **Progress Tracking:** Visual progress tables showing task completion status
+- **User Approval Workflow:** Structured approval process for task completion
+- **Dependencies Management:** Track and manage project dependencies and requirements
+- **Notes Management:** Add and manage project notes, preferences, and guidelines
+
+### Advanced Features
+- **17 Sophisticated Tools:** Comprehensive set of MCP tools for task management
+- **CRUD Operations:** Complete Create, Read, Update, Delete operations for tasks, subtasks, and notes
+- **Flexible Export Options:** Export task status in multiple formats (Markdown, JSON, HTML)
+- **Schema Validation:** Built with Zod schema validation for data integrity
+- **Real-time Updates:** Dynamic progress tracking and status updates
+
+## 🏗️ Architecture
+
+### Technology Stack
+- **Runtime:** Node.js
+- **Language:** TypeScript
+- **Framework:** @modelcontextprotocol/sdk v0.5.0
+- **Validation:** Zod schema validation
+- **Protocol:** Model Context Protocol (MCP) specification
 
 ### Core Components
+1. **Task Management Engine:** Core logic for task creation, tracking, and completion
+2. **Progress Tracking System:** Visual progress tables and status monitoring
+3. **Export System:** Multi-format export capabilities
+4. **Schema Validation:** Type-safe operations with Zod
+5. **MCP Integration:** Full MCP protocol compliance
 
-1. **TaskFlowServer Class**: The main class that manages tasks and requests, providing methods for creating, updating, and tracking tasks.
+## 🛠️ MCP Tools Provided
 
-2. **MCP Server Integration**: Uses the `@modelcontextprotocol/sdk` to expose functionality as tools that can be called by AI assistants.
+TaskFlow MCP provides 17 comprehensive tools for task management:
 
-3. **Data Persistence**: Tasks and requests are stored in JSON or YAML format (default: `~/Documents/tasks.json`), with automatic format detection based on file extension and configurable via environment variable.
+### Planning & Setup
+- `plan_task` - Register new requests and plan associated tasks
+- `add_tasks_to_request` - Extend existing requests with additional tasks
+- `add_subtasks` - Add subtasks to existing tasks
+- `add_dependency` - Add project or task dependencies
+- `add_note` - Add project notes and guidelines
 
-4. **Tool Definitions**: A set of tools that AI assistants can call to interact with the task manager.
+### Execution & Progress
+- `get_next_task` - Retrieve the next pending task
+- `mark_task_done` - Mark completed tasks
+- `mark_subtask_done` - Mark completed subtasks
+- `open_task_details` - Get detailed task information
 
-### Data Model
+### Management & Updates
+- `update_task` - Update task details
+- `update_subtask` - Update subtask details
+- `update_note` - Update project notes
+- `delete_task` - Remove tasks
+- `delete_subtask` - Remove subtasks
+- `delete_note` - Remove notes
 
-1. **Dependency**: Represents a project or task dependency with properties:
-   - `name`: Name of the dependency
-   - `version`: Optional version of the dependency
-   - `url`: Optional URL for the dependency
-   - `description`: Optional description of the dependency
+### Reporting & Export
+- `list_requests` - List all requests with summaries
+- `export_task_status` - Export task status in multiple formats
 
-2. **Note**: Represents a project-level note with properties:
-   - `id`: Unique identifier for the note
-   - `title`: Title of the note
-   - `content`: Content of the note
-   - `createdAt`: Timestamp when the note was created
-   - `updatedAt`: Timestamp when the note was last updated
+## 📊 Workflow Process
 
-3. **Subtask**: Represents a smaller unit of work within a task with properties:
-   - `id`: Unique identifier for the subtask
-   - `title`: Short title describing the subtask
-   - `description`: Detailed description of the subtask
-   - `done`: Boolean indicating if the subtask is completed
+The TaskFlow MCP follows a structured workflow:
 
-4. **Task**: Represents a single task with properties:
-   - `id`: Unique identifier for the task
-   - `title`: Short title describing the task
-   - `description`: Detailed description of the task
-   - `done`: Boolean indicating if the task is completed
-   - `completedDetails`: Optional details about how the task was completed
-   - `subtasks`: Array of Subtask objects
-   - `dependencies`: Optional array of Dependency objects
+1. **Planning Phase**
+   - User request is analyzed and broken down
+   - Tasks and subtasks are created
+   - Dependencies and notes are added
 
-5. **RequestEntry**: Represents a user request with properties:
-   - `requestId`: Unique identifier for the request
-   - `originalRequest`: The original text of the user's request
-   - `splitDetails`: Optional detailed breakdown of the request
-   - `tasks`: Array of Task objects
-   - `completed`: Boolean indicating if the entire request has been completed and approved
-   - `dependencies`: Optional array of Dependency objects
-   - `notes`: Optional array of Note objects
+2. **Execution Phase**
+   - Tasks are retrieved sequentially
+   - Subtasks are completed before main tasks
+   - Progress is tracked with visual tables
 
-6. **TaskFlowFile**: The top-level structure that contains an array of requests.
+3. **Approval Phase**
+   - User approval required after each task completion
+   - Prevents automatic progression without consent
 
-### Workflow
+4. **Documentation Phase**
+   - Task status exported for reference
+   - Progress preserved in multiple formats
 
-The TaskFlow MCP server enforces a specific workflow:
+## 🎛️ Current Project Status
 
-1. **Plan Tasks**: Break down a user request into tasks (with optional subtasks)
-2. **Get Next Task**: Retrieve the next pending task
-3. **Complete Subtasks**: If the task has subtasks, complete each subtask before marking the task as done
-4. **Mark Task Done**: Mark a task as completed (requires all subtasks to be completed first)
-5. **Wait for User Confirmation**: Ask the user to confirm the completed task before proceeding
-6. **Repeat**: Continue with the next task until all tasks are complete
-7. **Final Confirmation**: Confirm with the user that the entire request has been completed
+### Directory Structure
+```
+taskflow-mcp/
+├── src/
+│   └── index.ts                    # Main MCP server implementation (2,190 lines)
+├── dist/                           # Compiled JavaScript output
+├── examples/                       # Example configurations
+├── node_modules/                   # Dependencies
+├── biome.json                      # Biome configuration
+├── CHANGELOG.md                    # Version history
+├── CONTRIBUTING.md                 # Contribution guidelines
+├── Dockerfile                      # Docker configuration
+├── LICENSE                         # MIT License
+├── OVERVIEW.md                     # This file
+├── package.json                    # NPM package configuration
+├── package-lock.json               # Dependency lock file
+├── README.md                       # Main documentation
+├── taskflow.png                    # Project logo
+└── tsconfig.json                   # TypeScript configuration
+```
 
-This workflow ensures that tasks are properly tracked and that the user has visibility and control over the process. The simplified approval process relies on direct user confirmation rather than dedicated approval tools, making the workflow more intuitive while maintaining user control. The addition of subtasks allows for more granular tracking of progress and helps break down complex tasks into more manageable pieces.
+### Recent Activity
+- **January 5, 2025:** Version 1.3.3 - Added YAML format support and fixed newline handling
+- **August 19, 2025:** Version 1.3.2 - Simplified approval workflow
+- **May 10, 2025:** Version 1.2.1 - Documentation updates
+- **May 9, 2025:** Version 1.2.0 - Added export functionality, dependencies, and notes management
+- **May 9, 2025:** Version 1.1.0 - Added subtasks functionality
+- **May 9, 2025:** Version 1.0.0 - Initial release
 
-## Key Features
+### Current State
+✅ **FULLY IMPLEMENTED** - TaskFlow MCP is a production-ready, published NPM package with:
+- Complete TypeScript implementation in `src/index.ts`
+- Published to NPM as `@pinkpixel/taskflow-mcp`
+- Comprehensive documentation and examples
+- Active maintenance and version updates
+- MIT licensed and open source
 
-1. **Task Planning**: Break down complex requests into manageable tasks
-2. **Subtasks**: Divide tasks into smaller, more manageable units of work
-3. **Progress Tracking**: Track the status of tasks, subtasks, and requests
-4. **User Approval**: Enforce user approval steps to ensure quality and control
-5. **Persistence**: Save tasks and requests to disk for persistence across sessions
-6. **Flexible Management**: Add, update, or delete tasks and subtasks as needed
-7. **Detailed Reporting**: View task details, subtask status, and progress tables
-8. **Export Options**: Export task plans and status reports in Markdown, JSON, or HTML formats
-9. **Dependencies**: Track project and task-level dependencies with version information
-10. **Notes**: Add project-level notes for important information and preferences
-11. **YAML Support**: Save tasks in YAML format for better handling of multiline content and human-readable files
-12. **Robust Text Handling**: Comprehensive newline sanitization to prevent corruption of multiline descriptions
-13. **System Prompts**: Example system prompts for AI assistants to consistently use the tools
+## 🚀 Usage & Installation
 
-## Technical Implementation
+TaskFlow MCP is ready to use! Here's how to get started:
 
-### Technologies Used
+### Global Installation
+```bash
+npm install -g @pinkpixel/taskflow-mcp
+```
 
-1. **TypeScript**: For type safety and modern JavaScript features
-2. **Zod**: For schema validation of inputs
-3. **Model Context Protocol (MCP) SDK**: For creating a server that can be used by AI assistants
-4. **Node.js fs/promises API**: For file operations to persist task data
-5. **js-yaml**: For YAML parsing and serialization support
+### Local Installation
+```bash
+npm install @pinkpixel/taskflow-mcp
+```
 
-### Project Structure
+### Running the Server
+```bash
+# Global installation
+taskflow-mcp
 
-The project has a relatively simple structure, with a single main file (`index.ts`) containing all the logic. It's set up as an npm package that can be installed and run as a command-line tool.
+# Local installation
+npx taskflow-mcp
+```
 
-### Available Tools
+### MCP Configuration Example
+```json
+{
+  "mcpServers": {
+    "taskflow": {
+      "command": "npx",
+      "args": ["-y", "@pinkpixel/taskflow-mcp"],
+      "env": {
+        "TASK_MANAGER_FILE_PATH": "/path/to/tasks.yaml"
+      }
+    }
+  }
+}
+```
 
-The TaskFlow MCP server exposes the following tools to AI assistants:
+## 🛠️ Future Enhancements
 
-1. **plan_task**: Register a new user request and plan its associated tasks (with optional subtasks, dependencies, notes, and outputPath)
-2. **get_next_task**: Retrieve the next pending task for a request
-3. **mark_task_done**: Mark a task as completed (requires all subtasks to be completed first)
-4. **open_task_details**: Get details about a specific task (including its subtasks)
-5. **list_requests**: List all requests in the system
-6. **add_tasks_to_request**: Add more tasks to an existing request
-7. **update_task**: Update a task's title or description
-8. **delete_task**: Delete a task from a request
-9. **add_subtasks**: Add subtasks to an existing task
-10. **mark_subtask_done**: Mark a subtask as completed
-11. **update_subtask**: Update a subtask's title or description
-12. **delete_subtask**: Delete a subtask from a task
-13. **export_task_status**: Export the current status of all tasks to a file (markdown, JSON, or HTML)
-14. **add_note**: Add a note to a request
-15. **update_note**: Update an existing note
-16. **delete_note**: Delete a note from a request
-17. **add_dependency**: Add a dependency to a request or task
+Potential areas for continued development:
 
-## Configuration
+1. **Code Organization**
+   - Modularize the large index.ts file into smaller components
+   - Add more comprehensive unit tests
+   - Implement integration tests
 
-The TaskFlow MCP server can be configured in the following ways:
+2. **Feature Extensions**
+   - Add task scheduling and deadlines
+   - Implement task templates
+   - Add collaboration features
+   - Support for task attachments
 
-1. **Task File Path**: Set the `TASK_MANAGER_FILE_PATH` environment variable to specify where tasks should be stored (default: `~/Documents/tasks.json`). The format (JSON or YAML) is automatically detected based on the file extension (`.json`, `.yaml`, or `.yml`).
+3. **Performance & Scale**
+   - Database backend options (beyond file storage)
+   - Task indexing and search capabilities
+   - Performance optimization for large task sets
 
-2. **MCP Configuration**: The `mcp_config.json` file defines how the MCP server should be launched, specifying that it should be run using `npx` with the `@pinkpixel-dev/taskflow-mcp` package.
+## 🔗 Related Information
 
-3. **System Prompts**: The `example-system-prompt.md` file provides example system prompts that can be added to AI assistants to ensure they consistently use the TaskFlow MCP tools according to the intended workflow.
+- **MCP Specification:** [Model Context Protocol Documentation](https://modelcontextprotocol.io)
+- **SDK Documentation:** [@modelcontextprotocol/sdk](https://github.com/modelcontextprotocol/typescript-sdk)
+- **Schema Validation:** [Zod Documentation](https://zod.dev)
 
-## Usage Examples
+## 📝 Notes
 
-### Example Workflow
+- This overview reflects the current state of a fully implemented, production-ready MCP server
+- TaskFlow MCP v1.3.3 is actively maintained and published to NPM
+- The project represents a sophisticated example of MCP server capabilities
+- Source code is complete and located in `src/index.ts` with ~2,190 lines of TypeScript
+- The project follows semantic versioning and maintains comprehensive documentation
 
-1. **Plan Tasks with Subtasks**:
-   ```json
-   {
-     "originalRequest": "Create a new website for my business",
-     "tasks": [
-       {
-         "title": "Design homepage",
-         "description": "Create a design for the homepage with logo, navigation, and hero section",
-         "subtasks": [
-           {
-             "title": "Design logo",
-             "description": "Create a logo that represents the business brand"
-           },
-           {
-             "title": "Design navigation",
-             "description": "Create a user-friendly navigation menu"
-           },
-           {
-             "title": "Design hero section",
-             "description": "Create an eye-catching hero section with call-to-action"
-           }
-         ]
-       },
-       {
-         "title": "Implement HTML/CSS",
-         "description": "Convert the design to HTML and CSS",
-         "subtasks": [
-           {
-             "title": "Create HTML structure",
-             "description": "Implement the basic HTML structure of the page"
-           },
-           {
-             "title": "Add CSS styling",
-             "description": "Style the page according to the design"
-           },
-           {
-             "title": "Ensure responsiveness",
-             "description": "Make sure the page looks good on all devices"
-           }
-         ]
-       },
-       {
-         "title": "Add JavaScript functionality",
-         "description": "Implement interactive elements with JavaScript"
-       }
-     ]
-   }
-   ```
+---
 
-2. **Get Next Task**:
-   ```json
-   {
-     "requestId": "req-1"
-   }
-   ```
-
-3. **Mark Task Done**:
-   ```json
-   {
-     "requestId": "req-1",
-     "taskId": "task-1",
-     "completedDetails": "Created a modern design with a clean layout, prominent logo, and clear navigation"
-   }
-   ```
-
-4. **Mark Subtask Done**:
-   ```json
-   {
-     "requestId": "req-1",
-     "taskId": "task-1",
-     "subtaskId": "subtask-1"
-   }
-   ```
-
-5. **Add Subtasks to Existing Task**:
-   ```json
-   {
-     "requestId": "req-1",
-     "taskId": "task-2",
-     "subtasks": [
-       {
-         "title": "Add form validation",
-         "description": "Implement client-side validation for the contact form"
-       },
-       {
-         "title": "Add form submission",
-         "description": "Implement form submission handling"
-       }
-     ]
-   }
-   ```
-
-6. **Export Task Status**:
-   ```json
-   {
-     "requestId": "req-1",
-     "outputPath": "C:/Users/username/Documents/task-status.md",
-     "format": "markdown"
-   }
-   ```
-
-7. **Add Note**:
-   ```json
-   {
-     "requestId": "req-1",
-     "title": "Package Manager Preference",
-     "content": "User prefers pnpm over npm for package management."
-   }
-   ```
-
-8. **Add Dependency**:
-   ```json
-   {
-     "requestId": "req-1",
-     "taskId": "task-2",
-     "dependency": {
-       "name": "React",
-       "version": "^18.2.0",
-       "description": "JavaScript library for building user interfaces"
-     }
-   }
-   ```
-
-
-## Future Enhancements
-
-Potential future enhancements for the TaskFlow MCP server include:
-
-1. **Multiple Storage Options**: Support for different storage backends (e.g., databases)
-2. **User Authentication**: Add user authentication to support multiple users
-3. **Task Dependencies**: Add support for dependencies between tasks and subtasks
-4. **Task Templates**: Add support for reusable task and subtask templates
-5. **Rich Formatting**: Support for rich text formatting in task descriptions and completion details
-6. **Attachments**: Support for file attachments to tasks and subtasks
-7. **Notifications**: Add support for notifications when tasks are ready for approval
-8. **Analytics**: Add analytics to track task and subtask completion times and other metrics
-9. **Subtask Dependencies**: Add support for dependencies between subtasks
-10. **Subtask Assignment**: Allow assigning subtasks to different team members
-
-## Conclusion
-
-TaskFlow MCP is a powerful tool for AI assistants to manage tasks and track progress on user requests. By enforcing a structured workflow with user approval steps, it ensures that tasks are properly tracked and that users maintain control over the process.
+*Made with ❤️ by Pink Pixel*
