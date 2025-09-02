@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Robust newline handling in task descriptions and subtask descriptions
   - Fixed corrupted newline patterns like 'nn' and 'n-' that were appearing in saved data
   - Implemented comprehensive string sanitization to normalize various newline formats
+  - Improved sanitization logic to be more precise and avoid false positives with legitimate text
+  - Fixed specific issue #4 where "instructions.mdnnFiles" and "analyze:n-" patterns were corrupted
   - Ensured proper preservation of multiline content in both JSON and YAML formats
   - Fixed issues where newlines were being incorrectly escaped or replaced during save operations
 

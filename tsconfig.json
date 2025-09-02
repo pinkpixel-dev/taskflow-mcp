@@ -7,10 +7,10 @@
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
 		"outDir": "./dist",
-		"rootDir": ".",
+		"rootDir": "./src",
 		"moduleResolution": "NodeNext",
 		"module": "NodeNext"
 	},
-	"exclude": ["node_modules"],
-	"include": ["./**/*.ts"]
+	"exclude": ["node_modules", "dist"],
+	"include": ["src/**/*.ts"]
 }

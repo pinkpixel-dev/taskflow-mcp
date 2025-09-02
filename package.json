@@ -1,7 +1,7 @@
 {
 	"name": "@pinkpixel/taskflow-mcp",
-  "version": "1.3.3",
-	"description": "Task manager Model Context Protocol (MCP) server for planning and executing tasks.",
+  "version": "1.4.0",
+	"description": "Model Context Protocol (MCP) server for planning and executing tasks.",
 	"author": "Pink Pixel",
 	"main": "dist/index.js",
 	"type": "module",
@@ -11,10 +11,11 @@
 	"files": [
 		"dist"
 	],
-	"scripts": {
-		"build": "tsc && shx chmod +x dist/*.js",
-		"prepare": "npm run build",
-		"watch": "tsc --watch"
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"repository": {
 		"type": "git",
@@ -34,7 +35,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "0.5.0",
+		"@modelcontextprotocol/sdk": "^1.11.1",
 		"chalk": "^5.3.0",
 		"docker-cli": "^0.0.2",
 		"glob": "^10.3.10",
@@ -45,8 +46,9 @@
 	"devDependencies": {
 		"@types/js-yaml": "^4.0.9",
 		"@types/json-schema": "^7.0.15",
-		"@types/node": "^20.11.0",
-		"shx": "^0.3.4",
-		"typescript": "^5.3.3"
+		"@types/node": "^22.15.17",
+		"@types/fs-extra": "^11.0.4",
+		"typescript": "^5.8.3",
+		"shx": "^0.3.4"
 	}
 }
