@@ -1,0 +1,37 @@
+{
+  "mcpServers": {
+    "taskflow": {
+      "command": "npx",
+      "args": ["-y", "@pinkpixel/taskflow-mcp"],
+      "env": {
+        "TASK_MANAGER_FILE_PATH": "/path/to/tasks.yaml",
+        "TASK_MANAGER_BASE_DIR": "/optional/custom/base/directory",
+        "ARCHIVE_FILE_PATH": "/path/to/tasks-archive.yaml",
+        "ARCHIVE_MODE": "manual"
+      }
+    }
+  },
+  "_comments": {
+    "TASK_MANAGER_FILE_PATH": "Path to your tasks file. Can be absolute or relative. Supports both .json and .yaml extensions.",
+    "TASK_MANAGER_BASE_DIR": "Optional: Custom base directory for resolving relative paths. Defaults to process.cwd().",
+    "ARCHIVE_FILE_PATH": "Optional: Path to archive file. Defaults to [taskfile-name]-archive.[ext] in same directory.",
+    "ARCHIVE_MODE": "Archive mode: 'manual' (default) or 'auto-on-complete' for automatic archiving.",
+    "examples": {
+      "relative_paths": [
+        "./tasks.yaml",
+        "project-tasks.yaml",
+        "tasks/current.yaml",
+        "../shared-tasks.yaml"
+      ],
+      "absolute_paths": [
+        "/home/user/projects/tasks.yaml",
+        "C:\\Users\\username\\Documents\\tasks.yaml"
+      ],
+      "formats": [
+        "tasks.json (JSON format)",
+        "tasks.yaml (YAML format - recommended for multiline content)",
+        "tasks.yml (YAML format alternative extension)"
+      ]
+    }
+  }
+}

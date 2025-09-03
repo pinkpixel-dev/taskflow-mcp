@@ -5,6 +5,48 @@ All notable changes to the TaskFlow MCP project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2025-09-03
+
+### Added
+
+- **Archive System** - Complete task archiving functionality (Issue #9)
+  - `archive_completed_requests` tool to archive finished requests and keep active tasks clean
+  - `list_archived_requests` tool to browse archived requests with search and filtering capabilities
+  - `restore_archived_request` tool to restore archived requests back to active status
+  - Archive files include completion timestamps, metadata, and full request history
+  - Comprehensive error handling and validation for archive operations
+  - Archive file structure with version tracking and metadata management
+
+- **Prompts System** - Global prompts configuration management (Issue #8)
+  - `get_prompts` tool to retrieve current prompts configuration
+  - `set_prompts` tool to set global instructions, taskPrefix, and taskSuffix
+  - `update_prompts` tool to update specific parts of prompts configuration
+  - `remove_prompts` tool to remove entire configuration or specific fields
+  - Prompts are stored alongside tasks in the same file (JSON/YAML)
+  - Automatic timestamp tracking for prompts creation and updates
+  - Backward compatibility with existing task files without prompts
+
+- **Enhanced Path Resolution** - Improved file path handling (Issue #7)
+  - Support for relative paths in TASK_MANAGER_FILE_PATH environment variable
+  - Automatic path resolution using Node.js path.resolve() and path.normalize()
+  - Cross-platform compatibility for Windows and Linux path formats
+  - Support for TASK_MANAGER_BASE_DIR to override default base directory
+  - Comprehensive error handling and fallback mechanisms for path resolution
+  - Enhanced documentation with path usage examples and best practices
+
+### Improved
+
+- Enhanced progress tracking with better task status visualization
+- Improved error messages and validation across all tools
+- Better handling of edge cases in task and subtask management
+- More robust file operations with proper error recovery
+
+### Fixed
+
+- Path resolution issues on different operating systems
+- Task completion status validation in archive operations
+- Memory management improvements in large task sets
+
 ## [1.3.3] - 2025-01-05
 
 ### Added

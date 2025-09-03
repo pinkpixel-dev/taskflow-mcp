@@ -13,6 +13,14 @@ export interface Note {
   updatedAt: string;
 }
 
+export interface Prompts {
+  instructions?: string;
+  taskPrefix?: string;
+  taskSuffix?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Subtask {
   id: string;
   title: string;
@@ -42,5 +50,23 @@ export interface RequestEntry {
 }
 
 export interface TaskFlowFile {
+  prompts?: Prompts;
   requests: RequestEntry[];
+}
+
+export interface ArchivedRequestEntry extends Omit<RequestEntry, 'completed'> {
+  completed: true;
+  archivedAt: string;
+  completedAt: string;
+  originalRequestId: string;
+}
+
+export interface TaskFlowArchiveFile {
+  archivedRequests: ArchivedRequestEntry[];
+  archiveInfo: {
+    createdAt: string;
+    lastArchivedAt: string;
+    totalArchivedRequests: number;
+    version: string;
+  };
 }

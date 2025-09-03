@@ -12,7 +12,7 @@ A task management Model Context Protocol (MCP) server for planning and executing
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@pinkpixel-dev/taskflow-mcp/badge" alt="TaskFlow MCP server" />
 </a>
 
-![Version](https://img.shields.io/badge/version-1.3.3-blue)
+![Version](https://img.shields.io/badge/version-1.4.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## 🌟 Overview
@@ -33,6 +33,10 @@ TaskFlow MCP is a specialized server that helps AI assistants break down user re
 - 📌 **Notes**: Add project-level notes for important information and preferences
 - 📄 **YAML Support**: Save tasks in YAML format for better handling of multiline content
 - 🛡️ **Robust Text Handling**: Comprehensive newline sanitization for reliable data persistence
+- 🎯 **Prompts System**: Global instructions and task prefix/suffix for consistent LLM guidance
+- 📚 **Task Archiving**: Archive completed requests to keep active task lists clean
+- 🗂️ **Archive Management**: Browse, search, and restore archived tasks with full history
+- 📍 **Relative Path Support**: Use relative paths for flexible project-based workflows
 
 ## 🚀 Installation
 
@@ -66,11 +70,39 @@ npx taskflow-mcp
 
 ### Configuration
 
-By default, TaskFlow MCP saves tasks to `~/Documents/tasks.json`. You can change this by setting the `TASK_MANAGER_FILE_PATH` environment variable:
+By default, TaskFlow MCP saves tasks to `tasks.yaml` in the current working directory. You can customize this by setting the `TASK_MANAGER_FILE_PATH` environment variable:
 
+#### File Path Options
+
+**Absolute paths** (recommended for production):
 ```bash
-TASK_MANAGER_FILE_PATH=/path/to/tasks.json taskflow-mcp
+TASK_MANAGER_FILE_PATH=/home/user/projects/my-tasks.yaml taskflow-mcp
+# Windows
+TASK_MANAGER_FILE_PATH=C:\Users\username\Documents\tasks.yaml taskflow-mcp
 ```
+
+**Relative paths** (great for project-based workflows):
+```bash
+# Resolves to ./project-tasks.yaml in the current directory
+TASK_MANAGER_FILE_PATH=project-tasks.yaml taskflow-mcp
+
+# Resolves to ./tasks/current.yaml relative to working directory
+TASK_MANAGER_FILE_PATH=tasks/current.yaml taskflow-mcp
+```
+
+**Advanced: Custom base directory**
+```bash
+# Use a different base directory for relative path resolution
+TASK_MANAGER_BASE_DIR=/home/user/workspace TASK_MANAGER_FILE_PATH=tasks.yaml taskflow-mcp
+```
+
+#### Cross-Platform Compatibility
+
+TaskFlow MCP automatically handles path resolution across Windows and Linux:
+- Uses Node.js `path.resolve()` and `path.normalize()` for consistent behavior
+- Supports both forward slashes (`/`) and backslashes (`\`) on Windows
+- Automatically creates parent directories when saving tasks
+- Provides clear error messages for path resolution issues
 
 #### YAML Format Support
 
@@ -87,26 +119,30 @@ YAML format is particularly useful for:
 
 The format is automatically detected based on the file extension, and the system maintains full backward compatibility with existing JSON files.
 
+#### Archive System
+
+TaskFlow MCP v1.4.1 includes a comprehensive archive system to keep your active task lists clean while preserving completed work history:
+
+```bash
+# Configure archive file path (optional - defaults to [taskfile-name]-archive.[ext])
+ARCHIVE_FILE_PATH=/path/to/tasks-archive.yaml taskflow-mcp
+
+# Set archive mode (optional - defaults to 'manual')
+ARCHIVE_MODE=manual taskflow-mcp  # or 'auto-on-complete'
+```
+
+Archive features include:
+- **Manual archiving**: Use `archive_completed_requests` tool to archive when ready
+- **Automatic archiving**: Set `ARCHIVE_MODE=auto-on-complete` for automatic archiving
+- **Archive browsing**: Search and filter archived requests with `list_archived_requests`
+- **Archive restoration**: Restore archived requests back to active status with `restore_archived_request`
+- **Full history preservation**: Complete task history, timestamps, and metadata preserved
+
 ### MCP Configuration
 
 To use TaskFlow MCP with AI assistants, you need to configure your MCP client to use the server. Create an `mcp_config.json` file with the following content:
 
-```json
-{
-  "mcpServers": {
-    "taskflow": {
-      "command": "npx",
-      "args": ["-y", "@pinkpixel/taskflow-mcp"],
-      "env": {
-        "TASK_MANAGER_FILE_PATH": "/path/to/tasks.json"
-      }
-    }
-  }
-}
-```
-
-For YAML format:
-
+**Basic Configuration:**
 ```json
 {
   "mcpServers": {
@@ -120,6 +156,32 @@ For YAML format:
   }
 }
 ```
+
+**Advanced Configuration (with all v1.4.1 options):**
+```json
+{
+  "mcpServers": {
+    "taskflow": {
+      "command": "npx",
+      "args": ["-y", "@pinkpixel/taskflow-mcp"],
+      "env": {
+        "TASK_MANAGER_FILE_PATH": "./project-tasks.yaml",
+        "TASK_MANAGER_BASE_DIR": "/path/to/project/root",
+        "ARCHIVE_FILE_PATH": "./tasks-archive.yaml",
+        "ARCHIVE_MODE": "manual"
+      }
+    }
+  }
+}
+```
+
+**Configuration Options:**
+- `TASK_MANAGER_FILE_PATH`: Path to tasks file (supports .json/.yaml, absolute/relative paths)
+- `TASK_MANAGER_BASE_DIR`: Custom base directory for relative path resolution
+- `ARCHIVE_FILE_PATH`: Path to archive file (optional, auto-generated if not specified)
+- `ARCHIVE_MODE`: Archive mode - "manual" (default) or "auto-on-complete"
+
+> 💡 **Tip:** See [examples/mcp_config_comprehensive.json](./examples/mcp_config_comprehensive.json) for a complete configuration example with detailed comments and usage examples.
 
 ## 🔄 Workflow
 
@@ -412,6 +474,168 @@ Add a dependency to a request or task.
   }
 }
 ```
+
+## 🎯 Prompts Management
+
+TaskFlow MCP now supports a global prompts system to enhance LLM focus and consistency across tasks. This addresses the need for custom instructions and task prefixes/suffixes as requested in user feedback.
+
+### `get_prompts`
+
+Get the current prompts configuration.
+
+```json
+{}
+```
+
+**Returns:** Current prompts settings including instructions, taskPrefix, and taskSuffix.
+
+### `set_prompts`
+
+Set the global prompts configuration (replaces existing settings).
+
+```json
+{
+  "instructions": "You are working on a React TypeScript project. Always follow the existing patterns and ensure type safety.",
+  "taskPrefix": "🎯 IMPORTANT: Review the project architecture before starting.",
+  "taskSuffix": "✅ Remember to run tests and ensure all imports are properly typed."
+}
+```
+
+### `update_prompts`
+
+Update specific parts of the prompts configuration without replacing everything.
+
+```json
+{
+  "instructions": "Updated project context: Now using Next.js 14 with App Router.",
+  "taskPrefix": "🚀 NEW APPROACH: Consider server components first."
+}
+```
+
+### `remove_prompts`
+
+Remove the entire prompts configuration or specific fields.
+
+```json
+{
+  "fields": ["taskPrefix", "taskSuffix"]
+}
+```
+
+**Leave empty to remove all prompts:**
+```json
+{}
+```
+
+### How Prompts Work
+
+When prompts are configured:
+1. **Instructions** appear as context with each task
+2. **Task Prefix** is prepended to every task description
+3. **Task Suffix** is appended to every task description
+4. These are applied automatically when tasks are retrieved via `get_next_task` or `open_task_details`
+
+**Example task file with prompts:**
+```yaml
+prompts:
+  instructions: "Follow the company coding standards and review architecture docs"
+  taskPrefix: "📋 Before starting: Check dependencies and read recent changes"
+  taskSuffix: "🔍 After completion: Verify all tests pass and code is properly documented"
+  createdAt: "2024-03-15T10:30:00Z"
+  updatedAt: "2024-03-15T11:45:00Z"
+
+requests:
+  - requestId: req-1
+    originalRequest: "Add user authentication"
+    # ... rest of tasks
+```
+
+## 📦 Archive Management
+
+TaskFlow MCP includes a comprehensive archiving system to keep your active tasks file clean by moving completed requests to a separate archive file. This addresses the issue of cluttered task files in large projects with many completed tasks.
+
+### Environment Variables
+
+**Archive Configuration:**
+```bash
+# Optional: Custom archive file path (defaults to tasks-archive.yaml in same directory as task file)
+ARCHIVE_FILE_PATH=/path/to/custom-archive.yaml
+
+# Optional: Archive mode (manual or auto-on-complete, defaults to manual)
+ARCHIVE_MODE=manual
+```
+
+### `archive_completed_requests`
+
+Archive completed requests to keep the active tasks file clean.
+
+```json
+{
+  "requestIds": ["req-1", "req-2"]
+}
+```
+
+**Archive all completed requests:**
+```json
+{}
+```
+
+### `list_archived_requests`
+
+List archived requests with optional search and filtering.
+
+```json
+{
+  "searchTerm": "website project",
+  "limit": 10
+}
+```
+
+### `restore_archived_request`
+
+Restore an archived request back to active tasks.
+
+```json
+{
+  "requestId": "req-1"
+}
+```
+
+### Archive File Format
+
+Archived requests are stored in the same format (JSON/YAML) as your task file:
+
+```yaml
+archiveInfo:
+  createdAt: "2024-03-15T10:00:00Z"
+  lastArchivedAt: "2024-03-15T15:30:00Z"
+  totalArchivedRequests: 5
+  version: "1.0.0"
+
+archivedRequests:
+  - requestId: req-1
+    originalRequestId: req-1
+    originalRequest: "Build user authentication system"
+    archivedAt: "2024-03-15T15:30:00Z"
+    completedAt: "2024-03-15T15:25:00Z"
+    tasks:
+      - # ... completed tasks
+    # ... other request data
+```
+
+### Archiving Workflow
+
+1. **Complete your tasks** - Finish all tasks in a request
+2. **Archive completed requests** - Use `archive_completed_requests` to move them to archive
+3. **Browse archives** - Use `list_archived_requests` to view archived work
+4. **Restore if needed** - Use `restore_archived_request` to bring back archived requests
+
+**Benefits:**
+- ✅ **Clean active file** - Keep your working tasks file focused and uncluttered
+- ✅ **Preserve history** - All completed work is safely stored with timestamps
+- ✅ **Easy recovery** - Restore archived requests if you need to revisit them
+- ✅ **Searchable archive** - Find archived requests by name or ID
+- ✅ **Automatic management** - Optional auto-archiving when requests complete
 
 ## 📚 Documentation
 

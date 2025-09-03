@@ -13,6 +13,12 @@ export const NoteSchema = z.object({
   content: z.string(),
 });
 
+export const PromptsSchema = z.object({
+  instructions: z.string().optional(),
+  taskPrefix: z.string().optional(),
+  taskSuffix: z.string().optional(),
+});
+
 export const SubtaskSchema = z.object({
   title: z.string(),
   description: z.string(),
@@ -66,6 +72,16 @@ const noteJson = {
     content: { type: "string" },
   },
   required: ["title", "content"],
+} as const;
+
+const promptsJson = {
+  type: "object",
+  properties: {
+    instructions: { type: "string" },
+    taskPrefix: { type: "string" },
+    taskSuffix: { type: "string" },
+  },
+  required: [],
 } as const;
 
 const taskInputJson = {

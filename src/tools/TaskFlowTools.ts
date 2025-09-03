@@ -423,6 +423,126 @@ export const ADD_DEPENDENCY_TOOL: Tool = {
   },
 };
 
+export const GET_PROMPTS_TOOL: Tool = {
+  name: "get_prompts",
+  description:
+    "Get the current prompts configuration including instructions, taskPrefix, and taskSuffix settings.\n\n" +
+    "This tool helps you view the current global prompts settings that are applied to all tasks.",
+  inputSchema: {
+    type: "object",
+    properties: {},
+  },
+};
+
+export const SET_PROMPTS_TOOL: Tool = {
+  name: "set_prompts",
+  description:
+    "Set the global prompts configuration with instructions, taskPrefix, and/or taskSuffix.\n\n" +
+    "This replaces any existing prompts settings with the new values provided.\n\n" +
+    "- 'instructions': General instructions or context shown at the top of each task\n" +
+    "- 'taskPrefix': Text to prepend before each task description\n" +
+    "- 'taskSuffix': Text to append after each task description",
+  inputSchema: {
+    type: "object",
+    properties: {
+      instructions: { type: "string" },
+      taskPrefix: { type: "string" },
+      taskSuffix: { type: "string" },
+    },
+  },
+};
+
+export const UPDATE_PROMPTS_TOOL: Tool = {
+  name: "update_prompts",
+  description:
+    "Update specific parts of the prompts configuration without replacing the entire object.\n\n" +
+    "Use this to modify individual fields (instructions, taskPrefix, or taskSuffix) while keeping other settings unchanged.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      instructions: { type: "string" },
+      taskPrefix: { type: "string" },
+      taskSuffix: { type: "string" },
+    },
+  },
+};
+
+export const REMOVE_PROMPTS_TOOL: Tool = {
+  name: "remove_prompts",
+  description:
+    "Remove the entire prompts configuration or specific fields from it.\n\n" +
+    "If 'fields' is provided, only those specific fields will be removed.\n" +
+    "If 'fields' is not provided, the entire prompts configuration will be removed.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      fields: { 
+        type: "array", 
+        items: { 
+          type: "string",
+          enum: ["instructions", "taskPrefix", "taskSuffix"]
+        }
+      },
+    },
+  },
+};
+
+export const ARCHIVE_COMPLETED_REQUESTS_TOOL: Tool = {
+  name: "archive_completed_requests",
+  description:
+    "Archive completed requests to a separate file to keep the active tasks file clean.\n\n" +
+    "If 'requestIds' is provided, only those specific completed requests will be archived.\n" +
+    "If 'requestIds' is not provided, all completed requests will be archived.\n\n" +
+    "This addresses the need to keep active tasks file uncluttered by moving completed work to archive storage.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      requestIds: {
+        type: "array",
+        items: { type: "string" },
+        description: "Optional array of specific request IDs to archive. If not provided, all completed requests will be archived."
+      },
+    },
+  },
+};
+
+export const LIST_ARCHIVED_REQUESTS_TOOL: Tool = {
+  name: "list_archived_requests",
+  description:
+    "List archived requests with optional search and filtering capabilities.\n\n" +
+    "Provides an overview of all archived requests with their metadata and completion information.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      searchTerm: {
+        type: "string",
+        description: "Optional search term to filter archived requests by request text or ID"
+      },
+      limit: {
+        type: "number",
+        description: "Optional limit on the number of results to return"
+      },
+    },
+  },
+};
+
+export const RESTORE_ARCHIVED_REQUEST_TOOL: Tool = {
+  name: "restore_archived_request",
+  description:
+    "Restore a specific archived request back to the active tasks file.\n\n" +
+    "This moves the request from the archive back to active status, allowing you to continue working on it.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      requestId: {
+        type: "string",
+        description: "The ID of the archived request to restore"
+      },
+    },
+    required: ["requestId"],
+  },
+};
+
 /** Dispatcher that binds tools to a TaskFlowService instance */
 export function taskflowHandlers(service: TaskFlowService) {
   return {
@@ -520,6 +640,40 @@ export function taskflowHandlers(service: TaskFlowService) {
     async add_dependency(args: any) {
       const { requestId, taskId, dependency } = args ?? {};
       return service.addDependency(String(requestId), dependency, taskId ? String(taskId) : undefined);
+    },
+
+    async get_prompts() {
+      return service.getPrompts();
+    },
+
+    async set_prompts(args: any) {
+      const { instructions, taskPrefix, taskSuffix } = args ?? {};
+      return service.setPrompts({ instructions, taskPrefix, taskSuffix });
+    },
+
+    async update_prompts(args: any) {
+      const { instructions, taskPrefix, taskSuffix } = args ?? {};
+      return service.updatePrompts({ instructions, taskPrefix, taskSuffix });
+    },
+
+    async remove_prompts(args: any) {
+      const { fields } = args ?? {};
+      return service.removePrompts(fields);
+    },
+
+    async archive_completed_requests(args: any) {
+      const { requestIds } = args ?? {};
+      return service.archiveCompletedRequests(requestIds);
+    },
+
+    async list_archived_requests(args: any) {
+      const { searchTerm, limit } = args ?? {};
+      return service.listArchivedRequests(searchTerm, limit);
+    },
+
+    async restore_archived_request(args: any) {
+      const { requestId } = args ?? {};
+      return service.restoreArchivedRequest(String(requestId));
     },
   } as const;
 }

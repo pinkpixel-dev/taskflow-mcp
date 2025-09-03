@@ -5,7 +5,7 @@
 ## 🎯 Project Information
 
 **Name:** TaskFlow MCP  
-**Version:** 1.4.0  
+**Version:** 1.4.1
 **Type:** Model Context Protocol (MCP) Server  
 **Language:** TypeScript  
 **Purpose:** Task management system designed for AI assistants like Claude  
@@ -25,11 +25,15 @@ TaskFlow MCP is a comprehensive Model Context Protocol server that provides AI a
 - **Notes Management:** Add and manage project notes, preferences, and guidelines
 
 ### Advanced Features
-- **17 Sophisticated Tools:** Comprehensive set of MCP tools for task management
+- **20 Sophisticated Tools:** Comprehensive set of MCP tools for task management
 - **CRUD Operations:** Complete Create, Read, Update, Delete operations for tasks, subtasks, and notes
 - **Flexible Export Options:** Export task status in multiple formats (Markdown, JSON, HTML)
 - **Schema Validation:** Built with Zod schema validation for data integrity
 - **Real-time Updates:** Dynamic progress tracking and status updates
+- **Relative Path Support:** Cross-platform file path resolution with Windows/Linux compatibility
+- **YAML & JSON Support:** Dual format persistence with automatic detection
+- **Prompts System:** Task-wide instructions, prefix/suffix for consistent LLM focus
+- **Task Archiving:** Archive completed tasks to keep active lists clean while preserving history
 
 ## 🏗️ Architecture
 
@@ -49,7 +53,7 @@ TaskFlow MCP is a comprehensive Model Context Protocol server that provides AI a
 
 ## 🛠️ MCP Tools Provided
 
-TaskFlow MCP provides 17 comprehensive tools for task management:
+TaskFlow MCP provides 20 comprehensive tools for task management:
 
 ### Planning & Setup
 - `plan_task` - Register new requests and plan associated tasks
@@ -71,6 +75,17 @@ TaskFlow MCP provides 17 comprehensive tools for task management:
 - `delete_task` - Remove tasks
 - `delete_subtask` - Remove subtasks
 - `delete_note` - Remove notes
+
+### Prompts & Instructions
+- `get_prompts` - Get current task prompts and instructions
+- `set_prompts` - Set task prompts and instructions
+- `update_prompts` - Update existing prompts
+- `remove_prompts` - Remove prompts configuration
+
+### Archive Management
+- `archive_completed_requests` - Archive completed tasks to keep active lists clean
+- `list_archived_requests` - Browse and search archived task history
+- `restore_archived_request` - Restore archived tasks back to active status
 
 ### Reporting & Export
 - `list_requests` - List all requests with summaries
@@ -122,7 +137,11 @@ taskflow-mcp/
 ```
 
 ### Recent Activity
+- **September 3, 2025:** Version 1.4.1 - Fixed duplicate function and type conversion issues
 - **September 3, 2025:** Version 1.4.0 - Enhanced MCP SDK integration and dependency updates
+- **September 3, 2025:** Version 1.3.6 - Added comprehensive task archiving system with restoration capabilities
+- **September 3, 2025:** Version 1.3.5 - Added prompts/instructions system with task prefix/suffix support
+- **September 3, 2025:** Version 1.3.4 - Added relative path support with cross-platform compatibility
 - **January 5, 2025:** Version 1.3.3 - Added YAML format support and fixed newline handling
 - **August 19, 2025:** Version 1.3.2 - Simplified approval workflow
 - **May 10, 2025:** Version 1.2.1 - Documentation updates
@@ -205,7 +224,7 @@ Potential areas for continued development:
 ## 📝 Notes
 
 - This overview reflects the current state of a fully implemented, production-ready MCP server
-- TaskFlow MCP v1.4.0 is actively maintained and published to NPM
+- TaskFlow MCP v1.4.1 is actively maintained and published to NPM
 - The project represents a sophisticated example of MCP server capabilities
 - Source code is complete and located in `src/index.ts` with ~2,190 lines of TypeScript
 - The project follows semantic versioning and maintains comprehensive documentation
