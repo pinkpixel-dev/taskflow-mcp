@@ -1,11 +1,11 @@
 # TaskFlow MCP - Project Overview
 
-*Last Updated: September 2, 2025*
+*Last Updated: September 3, 2025*
 
 ## 🎯 Project Information
 
 **Name:** TaskFlow MCP  
-**Version:** 1.3.3  
+**Version:** 1.4.0  
 **Type:** Model Context Protocol (MCP) Server  
 **Language:** TypeScript  
 **Purpose:** Task management system designed for AI assistants like Claude  
@@ -36,7 +36,7 @@ TaskFlow MCP is a comprehensive Model Context Protocol server that provides AI a
 ### Technology Stack
 - **Runtime:** Node.js
 - **Language:** TypeScript
-- **Framework:** @modelcontextprotocol/sdk v0.5.0
+- **Framework:** @modelcontextprotocol/sdk v1.11.1
 - **Validation:** Zod schema validation
 - **Protocol:** Model Context Protocol (MCP) specification
 
@@ -122,6 +122,7 @@ taskflow-mcp/
 ```
 
 ### Recent Activity
+- **September 3, 2025:** Version 1.4.0 - Enhanced MCP SDK integration and dependency updates
 - **January 5, 2025:** Version 1.3.3 - Added YAML format support and fixed newline handling
 - **August 19, 2025:** Version 1.3.2 - Simplified approval workflow
 - **May 10, 2025:** Version 1.2.1 - Documentation updates
@@ -204,7 +205,7 @@ Potential areas for continued development:
 ## 📝 Notes
 
 - This overview reflects the current state of a fully implemented, production-ready MCP server
-- TaskFlow MCP v1.3.3 is actively maintained and published to NPM
+- TaskFlow MCP v1.4.0 is actively maintained and published to NPM
 - The project represents a sophisticated example of MCP server capabilities
 - Source code is complete and located in `src/index.ts` with ~2,190 lines of TypeScript
 - The project follows semantic versioning and maintains comprehensive documentation
