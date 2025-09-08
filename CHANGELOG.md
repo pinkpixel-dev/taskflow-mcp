@@ -5,6 +5,36 @@ All notable changes to the TaskFlow MCP project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2025-09-08
+
+### Added
+
+- **Request Completion Tool** - New `mark_request_complete` MCP tool to mark entire requests as completed (Issue #10)
+  - Validates that all tasks and subtasks are completed before allowing request completion
+  - Required before requests can be archived
+  - Supports optional completion details/notes
+  - Automatic archiving integration when `ARCHIVE_MODE=auto-on-complete`
+  - Comprehensive error handling for incomplete tasks or subtasks
+
+### Fixed
+
+- **Request Completion Workflow** - Addressed issue where requests couldn't be marked as complete (Issue #10)
+  - Users can now properly complete requests which enables proper archiving workflow
+  - Request completion status is now properly tracked and validated
+  - Archive operations now work correctly with completed requests
+
+- **Archive File Auto-Creation** - Confirmed and documented automatic archive file creation (Issue #11)
+  - Archive files are automatically created when archiving is performed
+  - No manual file creation required by users
+  - Proper directory structure creation with error handling
+  - Existing functionality was working correctly, issue was resolved through clarification
+
+### Improved
+
+- Enhanced documentation with new `mark_request_complete` tool usage examples
+- Updated README.md with complete workflow documentation
+- Better error messages for request completion validation
+
 ## [1.4.1] - 2025-09-03
 
 ### Added
