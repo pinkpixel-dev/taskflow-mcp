@@ -1,11 +1,11 @@
 # TaskFlow MCP - Project Overview
 
-*Last Updated: September 3, 2025*
+*Last Updated: September 15, 2025*
 
 ## 🎯 Project Information
 
 **Name:** TaskFlow MCP  
-**Version:** 1.4.1
+**Version:** 1.4.2  
 **Type:** Model Context Protocol (MCP) Server  
 **Language:** TypeScript  
 **Purpose:** Task management system designed for AI assistants like Claude  
@@ -25,8 +25,9 @@ TaskFlow MCP is a comprehensive Model Context Protocol server that provides AI a
 - **Notes Management:** Add and manage project notes, preferences, and guidelines
 
 ### Advanced Features
-- **20 Sophisticated Tools:** Comprehensive set of MCP tools for task management
+- **22+ Sophisticated Tools:** Comprehensive set of MCP tools for task management
 - **CRUD Operations:** Complete Create, Read, Update, Delete operations for tasks, subtasks, and notes
+- **Request Completion Workflow:** New `mark_request_complete` tool with validation
 - **Flexible Export Options:** Export task status in multiple formats (Markdown, JSON, HTML)
 - **Schema Validation:** Built with Zod schema validation for data integrity
 - **Real-time Updates:** Dynamic progress tracking and status updates
@@ -34,6 +35,7 @@ TaskFlow MCP is a comprehensive Model Context Protocol server that provides AI a
 - **YAML & JSON Support:** Dual format persistence with automatic detection
 - **Prompts System:** Task-wide instructions, prefix/suffix for consistent LLM focus
 - **Task Archiving:** Archive completed tasks to keep active lists clean while preserving history
+- **Auto-Archive Integration:** Automatic archiving when `ARCHIVE_MODE=auto-on-complete`
 
 ## 🏗️ Architecture
 
@@ -45,15 +47,18 @@ TaskFlow MCP is a comprehensive Model Context Protocol server that provides AI a
 - **Protocol:** Model Context Protocol (MCP) specification
 
 ### Core Components
-1. **Task Management Engine:** Core logic for task creation, tracking, and completion
-2. **Progress Tracking System:** Visual progress tables and status monitoring
-3. **Export System:** Multi-format export capabilities
-4. **Schema Validation:** Type-safe operations with Zod
-5. **MCP Integration:** Full MCP protocol compliance
+1. **MCP Server Layer:** TaskFlowServer.ts - MCP protocol implementation and request handling
+2. **Business Logic Layer:** TaskFlowService.ts - Core task management operations and data persistence
+3. **Tools Layer:** TaskFlowTools.ts - MCP tool definitions and handlers
+4. **Schema Layer:** TaskFlowSchemas.ts - Zod validation schemas for type safety
+5. **Types Layer:** Comprehensive TypeScript interfaces for all data structures
+6. **Utilities Layer:** Specialized modules for paths, formatting, reports, and sanitization
+7. **Export System:** Multi-format export capabilities (Markdown, JSON, HTML)
+8. **Archive System:** Complete task archiving with search and restore capabilities
 
-## 🛠️ MCP Tools Provided
+## 🔠 MCP Tools Provided
 
-TaskFlow MCP provides 20 comprehensive tools for task management:
+TaskFlow MCP provides 22+ comprehensive tools for task management:
 
 ### Planning & Setup
 - `plan_task` - Register new requests and plan associated tasks
@@ -66,6 +71,7 @@ TaskFlow MCP provides 20 comprehensive tools for task management:
 - `get_next_task` - Retrieve the next pending task
 - `mark_task_done` - Mark completed tasks
 - `mark_subtask_done` - Mark completed subtasks
+- `mark_request_complete` - Mark entire requests as completed (required for archiving)
 - `open_task_details` - Get detailed task information
 
 ### Management & Updates
@@ -119,10 +125,30 @@ The TaskFlow MCP follows a structured workflow:
 ```
 taskflow-mcp/
 ├── src/
-│   └── index.ts                    # Main MCP server implementation (2,190 lines)
+│   ├── index.ts                    # Main entry point
+│   ├── server/
+│   │   └── TaskFlowServer.ts       # MCP server implementation
+│   ├── services/
+│   │   └── TaskFlowService.ts      # Core business logic
+│   ├── tools/
+│   │   └── TaskFlowTools.ts        # MCP tools definitions
+│   ├── schemas/
+│   │   └── TaskFlowSchemas.ts      # Zod validation schemas
+│   ├── types/
+│   │   └── index.ts               # TypeScript interfaces
+│   └── utils/
+│       ├── dependencies.ts        # Dependency management
+│       ├── factory.ts             # Object factories
+│       ├── fileFormat.ts          # File parsing/formatting
+│       ├── formatTables.ts        # Progress table formatting
+│       ├── paths.ts               # Path resolution utilities
+│       ├── planning.ts            # Task planning utilities
+│       ├── progress.ts            # Progress tracking
+│       ├── reports.ts             # Export report generation
+│       └── sanitize.ts            # String sanitization
 ├── dist/                           # Compiled JavaScript output
-├── examples/                       # Example configurations
-├── node_modules/                   # Dependencies
+├── examples/                       # Example configurations and usage
+├── feature-requests-implementation-plan.md # Development roadmap
 ├── biome.json                      # Biome configuration
 ├── CHANGELOG.md                    # Version history
 ├── CONTRIBUTING.md                 # Contribution guidelines
@@ -133,10 +159,13 @@ taskflow-mcp/
 ├── package-lock.json               # Dependency lock file
 ├── README.md                       # Main documentation
 ├── taskflow.png                    # Project logo
+├── glama.json                      # Glama MCP registry configuration
+├── smithery.yaml                   # Smithery configuration
 └── tsconfig.json                   # TypeScript configuration
 ```
 
 ### Recent Activity
+- **September 8, 2025:** Version 1.4.2 - Added request completion tool and enhanced archive workflow
 - **September 3, 2025:** Version 1.4.1 - Fixed duplicate function and type conversion issues
 - **September 3, 2025:** Version 1.4.0 - Enhanced MCP SDK integration and dependency updates
 - **September 3, 2025:** Version 1.3.6 - Added comprehensive task archiving system with restoration capabilities
@@ -151,11 +180,14 @@ taskflow-mcp/
 
 ### Current State
 ✅ **FULLY IMPLEMENTED** - TaskFlow MCP is a production-ready, published NPM package with:
-- Complete TypeScript implementation in `src/index.ts`
-- Published to NPM as `@pinkpixel/taskflow-mcp`
-- Comprehensive documentation and examples
-- Active maintenance and version updates
-- MIT licensed and open source
+- **Modular TypeScript Architecture:** Well-structured codebase with separation of concerns
+- **22+ MCP Tools:** Complete task management toolkit with advanced features
+- **Published to NPM:** Available as `@pinkpixel/taskflow-mcp` with semantic versioning
+- **Production Features:** Request completion workflow, archive system, prompts management
+- **Cross-platform Support:** Works on Windows, Linux, and macOS with proper path handling
+- **Comprehensive Documentation:** Detailed README, examples, and configuration guides
+- **Active Maintenance:** Regular updates and feature additions
+- **MIT Licensed:** Open source with permissive licensing
 
 ## 🚀 Usage & Installation
 
@@ -195,14 +227,14 @@ npx taskflow-mcp
 }
 ```
 
-## 🛠️ Future Enhancements
+## 🔠 Future Enhancements
 
 Potential areas for continued development:
 
-1. **Code Organization**
-   - Modularize the large index.ts file into smaller components
-   - Add more comprehensive unit tests
-   - Implement integration tests
+1. **Testing & Quality**
+   - Add comprehensive unit tests for all modules
+   - Implement integration tests for MCP protocol compliance
+   - Add performance benchmarks and load testing
 
 2. **Feature Extensions**
    - Add task scheduling and deadlines
@@ -224,9 +256,10 @@ Potential areas for continued development:
 ## 📝 Notes
 
 - This overview reflects the current state of a fully implemented, production-ready MCP server
-- TaskFlow MCP v1.4.1 is actively maintained and published to NPM
+- TaskFlow MCP v1.4.2 is actively maintained and published to NPM
 - The project represents a sophisticated example of MCP server capabilities
-- Source code is complete and located in `src/index.ts` with ~2,190 lines of TypeScript
+- Source code is well-architected with modular TypeScript design across multiple files
+- Features 22+ MCP tools with comprehensive task management capabilities
 - The project follows semantic versioning and maintains comprehensive documentation
 
 ---

@@ -46,7 +46,7 @@ export class TaskFlowServer {
     this.server = new Server(
       {
         name: "taskflow-mcp",
-        version: "1.4.0",
+        version: "1.5.0",
       },
       {
         capabilities: {

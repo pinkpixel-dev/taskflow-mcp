@@ -5,6 +5,33 @@ All notable changes to the TaskFlow MCP project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-09-15
+
+### BREAKING CHANGES
+
+- **Task Interface Simplified** - Removed unused `approved` field from Task interface (Issue #12)
+  - The `approved` boolean field was never used by any MCP tools and was blocking archiving functionality
+  - Tasks are now considered complete when `done: true` without requiring separate approval
+  - This aligns with the simplified workflow introduced in v1.3.2
+  - **Migration**: Any existing task files with `approved` fields will continue to work, but the field will be ignored
+
+- **Per-Request Task Numbering** - Changed from global to per-request task numbering (Issue #13)
+  - Tasks now use per-request numbering: req-1 has task-1, task-2; req-2 has task-1, task-2, etc.
+  - Subtasks also use per-request numbering: subtask-1, subtask-2 per request
+  - More intuitive and aligns with user expectations of independent request workflows
+  - **Migration**: Existing task files will continue to work, but new tasks will use the new numbering scheme
+
+### Fixed
+
+- **Archiving Workflow** - Archive operations no longer blocked by unused approval requirements
+- **Task ID Clarity** - Task numbering now matches user mental model of request-scoped workflows
+
+### Improved
+
+- Better separation between global counters (for notes) and per-request counters (for tasks)
+- Cleaner task interface without unnecessary fields
+- More intuitive task management workflow
+
 ## [1.4.2] - 2025-09-08
 
 ### Added

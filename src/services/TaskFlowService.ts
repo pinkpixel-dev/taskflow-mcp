@@ -50,7 +50,7 @@ const ARCHIVE_FILE_PATH = getArchiveFilePath();
 export class TaskFlowService {
   private data: TaskFlowFile = { requests: [] };
   private requestCounter = 0;
-  private taskCounter = 0;
+  private globalIdCounter = 0; // For notes and other global items
 
   // ===== IO =====
   private async loadTasks() {
@@ -61,31 +61,22 @@ export class TaskFlowService {
       this.data = parseTaskFlowFile(raw, ext);
 
       // Rebuild counters from existing IDs
-      const allTaskIds: number[] = [];
+      const allGlobalIds: number[] = [];
       const allRequestIds: number[] = [];
 
       for (const req of this.data.requests) {
         const reqNum = Number.parseInt(req.requestId.replace("req-", ""), 10);
         if (!Number.isNaN(reqNum)) allRequestIds.push(reqNum);
 
-        for (const t of req.tasks) {
-          const tNum = Number.parseInt(t.id.replace("task-", ""), 10);
-          if (!Number.isNaN(tNum)) allTaskIds.push(tNum);
-
-          for (const s of t.subtasks ?? []) {
-            const sNum = Number.parseInt(s.id.replace("subtask-", ""), 10);
-            if (!Number.isNaN(sNum)) allTaskIds.push(sNum);
-          }
-        }
-
+        // Only track notes for global counter (tasks are now per-request)
         for (const n of req.notes ?? []) {
           const nNum = Number.parseInt(n.id.replace("note-", ""), 10);
-          if (!Number.isNaN(nNum)) allTaskIds.push(nNum);
+          if (!Number.isNaN(nNum)) allGlobalIds.push(nNum);
         }
       }
 
       this.requestCounter = allRequestIds.length > 0 ? Math.max(...allRequestIds) : 0;
-      this.taskCounter = allTaskIds.length > 0 ? Math.max(...allTaskIds) : 0;
+      this.globalIdCounter = allGlobalIds.length > 0 ? Math.max(...allGlobalIds) : 0;
     } catch (error) {
       console.warn(
         `Error loading tasks from ${TASK_FILE_PATH}:`,
@@ -93,7 +84,7 @@ export class TaskFlowService {
       );
       this.data = { requests: [] };
       this.requestCounter = 0;
-      this.taskCounter = 0;
+      this.globalIdCounter = 0;
     }
   }
 
@@ -214,10 +205,10 @@ export class TaskFlowService {
     const sanitizedOriginalRequest = sanitizeString(originalRequest);
     const sanitizedSplitDetails = splitDetails ? sanitizeString(splitDetails) : undefined;
 
-    // Create tasks using a factory wired to the counter
-    const factory = new TaskFactory({ value: this.taskCounter });
+    // Create tasks using a factory with per-request numbering
+    const factory = new TaskFactory({ value: this.globalIdCounter });
     const newTasks: Task[] = tasks.map((t) => factory.createTask(t));
-    this.taskCounter = factory["counterRef"].value; // sync back
+    this.globalIdCounter = factory["counterRef"].value; // sync back for notes
 
     // Notes
     const processedNotes: Note[] = [];
@@ -233,7 +224,7 @@ export class TaskFlowService {
           updatedAt: now,
         });
       }
-      this.taskCounter = factory["counterRef"].value;
+      this.globalIdCounter = factory["counterRef"].value;
     }
 
     this.data.requests.push({
@@ -337,7 +328,6 @@ export class TaskFlowService {
         title: task.title,
         description: task.description,
         completedDetails: task.completedDetails,
-        approved: task.approved,
         subtasks: task.subtasks.map((s) => ({
           id: s.id,
           title: s.title,
@@ -379,9 +369,9 @@ export class TaskFlowService {
     if (!req) return { status: "error", message: "Request not found" };
     if (req.completed) return { status: "error", message: "Cannot add tasks to completed request" };
 
-    const factory = new TaskFactory({ value: this.taskCounter });
+    const factory = new TaskFactory({ value: this.globalIdCounter });
     const newTasks: Task[] = tasks.map((t) => factory.createTask(t));
-    this.taskCounter = factory["counterRef"].value;
+    this.globalIdCounter = factory["counterRef"].value;
 
     req.tasks.push(...newTasks);
     await this.saveTasks();
@@ -449,9 +439,9 @@ export class TaskFlowService {
     if (!task) return { status: "error", message: "Task not found" };
     if (task.done) return { status: "error", message: "Cannot add subtasks to completed task" };
 
-    const factory = new TaskFactory({ value: this.taskCounter });
+    const factory = new TaskFactory({ value: this.globalIdCounter });
     const newSubtasks = subtasks.map((s) => factory.createSubtask(s));
-    this.taskCounter = factory["counterRef"].value;
+    this.globalIdCounter = factory["counterRef"].value;
 
     task.subtasks.push(...newSubtasks);
     await this.saveTasks();
@@ -543,9 +533,9 @@ export class TaskFlowService {
     if (!req) return { status: "error", message: "Request not found" };
 
     const now = new Date().toISOString();
-    const factory = new TaskFactory({ value: this.taskCounter });
+    const factory = new TaskFactory({ value: this.globalIdCounter });
     const noteId = factory.createNoteId();
-    this.taskCounter = factory["counterRef"].value;
+    this.globalIdCounter = factory["counterRef"].value;
 
     const note: Note = {
       id: noteId,
@@ -648,7 +638,6 @@ export class TaskFlowService {
             title: task.title,
             description: enhancedDescription,
             done: task.done,
-            approved: task.approved,
             completedDetails: task.completedDetails,
             subtasks: task.subtasks,
             dependencies: task.dependencies || [],

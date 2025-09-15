@@ -33,7 +33,6 @@ export interface Task {
   title: string;
   description: string;
   done: boolean;
-  approved: boolean;
   completedDetails: string;
   subtasks: Subtask[];
   dependencies?: Dependency[];

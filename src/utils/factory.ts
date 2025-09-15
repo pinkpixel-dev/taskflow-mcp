@@ -2,11 +2,32 @@ import { Dependency, Subtask, Task } from "../types/index.js";
 import { sanitizeString } from "./sanitize.js";
 
 export class TaskFactory {
-  constructor(private counterRef: { value: number }) {}
+  private requestTaskCounter = 0;
+  private requestSubtaskCounter = 0;
+  
+  constructor(private globalCounterRef: { value: number }) {}
+
+  // Expose counter ref for backward compatibility
+  get counterRef() {
+    return this.globalCounterRef;
+  }
 
   private nextId(prefix: string) {
-    this.counterRef.value += 1;
-    return `${prefix}-${this.counterRef.value}`;
+    if (prefix === "task") {
+      // Use per-request task numbering
+      this.requestTaskCounter += 1;
+      return `${prefix}-${this.requestTaskCounter}`;
+    }
+    
+    if (prefix === "subtask") {
+      // Use per-request subtask numbering
+      this.requestSubtaskCounter += 1;
+      return `${prefix}-${this.requestSubtaskCounter}`;
+    }
+    
+    // For notes and other items, use global numbering
+    this.globalCounterRef.value += 1;
+    return `${prefix}-${this.globalCounterRef.value}`;
   }
 
   createSubtask(def: { title: string; description: string }): Subtask {
@@ -30,7 +51,6 @@ export class TaskFactory {
       title: sanitizeString(def.title),
       description: sanitizeString(def.description),
       done: false,
-      approved: false,
       completedDetails: "",
       subtasks,
       dependencies: def.dependencies,
