@@ -4,10 +4,8 @@
   <img src="taskflow.png" alt="TaskFlow MCP">
 </p>
 
-<p align="center">
   ![Version](https://img.shields.io/badge/version-1.5.0-blue)
   ![License](https://img.shields.io/badge/license-MIT-green)
-</p>
 
 A task management Model Context Protocol (MCP) server for planning and executing tasks with AI assistants.
 
