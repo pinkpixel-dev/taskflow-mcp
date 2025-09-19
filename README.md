@@ -1,5 +1,3 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/pinkpixel-dev-taskflow-mcp-badge.png)](https://mseep.ai/app/pinkpixel-dev-taskflow-mcp)
-
 # TaskFlow MCP 🔄✅
 
 <p align="center">
@@ -12,8 +10,9 @@ A task management Model Context Protocol (MCP) server for planning and executing
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@pinkpixel-dev/taskflow-mcp/badge" alt="TaskFlow MCP server" />
 </a>
 
-![Version](https://img.shields.io/badge/version-1.5.0-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+![Version](https://img.shields.io/badge/version-1.5.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) [![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/446dead3-8651-4e8c-900f-ba218dbaaa67)
+
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/pinkpixel-dev-taskflow-mcp-badge.png)](https://mseep.ai/app/pinkpixel-dev-taskflow-mcp)
 
 ## 🌟 Overview
 
