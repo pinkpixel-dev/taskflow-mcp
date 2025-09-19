@@ -11,6 +11,7 @@ A task management Model Context Protocol (MCP) server for planning and executing
 <a href="https://glama.ai/mcp/servers/@pinkpixel-dev/taskflow-mcp">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@pinkpixel-dev/taskflow-mcp/badge" alt="TaskFlow MCP server" />
 </a>
+
 [![MseeP.ai Security Assessment Badge](https://mseep.net/pr/pinkpixel-dev-taskflow-mcp-badge.png)](https://mseep.ai/app/pinkpixel-dev-taskflow-mcp)
 
 ## 🌟 Overview
